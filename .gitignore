@@ -1,0 +1,23 @@
+# Binaries
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test artifacts
+*.out
+*.test
+coverage.html
+
+# Environment
+.env
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+
+# Storage Uploads
+storage/

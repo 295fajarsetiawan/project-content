@@ -1,0 +1,577 @@
+syntax = "proto3";
+
+package content.v1;
+
+option go_package = "content-service/internal/delivery/grpc/pb;pb";
+
+service ContentService {
+  // ---------------------------------------------------------------------------
+  // 1. Banner Operations
+  // ---------------------------------------------------------------------------
+  rpc ListBanners (ListBannersRequest) returns (ListBannersResponse);
+  rpc GetBanner (GetBannerRequest) returns (BannerResponse);
+  rpc CreateBanner (CreateBannerRequest) returns (BannerResponse);
+  rpc UpdateBanner (UpdateBannerRequest) returns (BannerResponse);
+  rpc DeleteBanner (DeleteBannerRequest) returns (MessageResponse);
+
+  // ---------------------------------------------------------------------------
+  // 2. Blog Category & Article Operations
+  // ---------------------------------------------------------------------------
+  rpc ListBlogCategories (ListBlogCategoriesRequest) returns (ListBlogCategoriesResponse);
+  rpc CreateBlogCategory (CreateBlogCategoryRequest) returns (BlogCategoryResponse);
+
+  rpc ListBlogs (ListBlogsRequest) returns (ListBlogsResponse);
+  rpc GetBlog (GetBlogRequest) returns (BlogResponse);
+  rpc CreateBlog (CreateBlogRequest) returns (BlogResponse);
+  rpc UpdateBlog (UpdateBlogRequest) returns (BlogResponse);
+  rpc DeleteBlog (DeleteBlogRequest) returns (MessageResponse);
+
+  // ---------------------------------------------------------------------------
+  // 3. Gallery Operations
+  // ---------------------------------------------------------------------------
+  rpc ListGalleries (ListGalleriesRequest) returns (ListGalleriesResponse);
+  rpc GetGallery (GetGalleryRequest) returns (GalleryResponse);
+  rpc CreateGallery (CreateGalleryRequest) returns (GalleryResponse);
+  rpc DeleteGallery (DeleteGalleryRequest) returns (MessageResponse);
+  rpc AddGalleryItem (AddGalleryItemRequest) returns (GalleryItemResponse);
+  rpc DeleteGalleryItem (DeleteGalleryItemRequest) returns (MessageResponse);
+
+  // ---------------------------------------------------------------------------
+  // 4. Other Content Operations (Custom Blocks, FAQs, Testimonials)
+  // ---------------------------------------------------------------------------
+  rpc ListCustomBlocks (ListCustomBlocksRequest) returns (ListCustomBlocksResponse);
+  rpc GetCustomBlock (GetCustomBlockRequest) returns (CustomBlockResponse);
+  rpc UpsertCustomBlock (UpsertCustomBlockRequest) returns (CustomBlockResponse);
+  rpc DeleteCustomBlock (DeleteCustomBlockRequest) returns (MessageResponse);
+
+  rpc ListFAQs (ListFAQsRequest) returns (ListFAQsResponse);
+  rpc CreateFAQ (CreateFAQRequest) returns (FAQResponse);
+  rpc UpdateFAQ (UpdateFAQRequest) returns (FAQResponse);
+  rpc DeleteFAQ (DeleteFAQRequest) returns (MessageResponse);
+
+  rpc ListTestimonials (ListTestimonialsRequest) returns (ListTestimonialsResponse);
+  rpc CreateTestimonial (CreateTestimonialRequest) returns (TestimonialResponse);
+  rpc UpdateTestimonial (UpdateTestimonialRequest) returns (TestimonialResponse);
+  rpc DeleteTestimonial (DeleteTestimonialRequest) returns (MessageResponse);
+
+  // ---------------------------------------------------------------------------
+  // 5. Media Upload
+  // ---------------------------------------------------------------------------
+  rpc UploadMedia (UploadMediaRequest) returns (UploadMediaResponse);
+}
+
+// =============================================================================
+// Common Models
+// =============================================================================
+
+message PaginationMeta {
+  int32 current_page = 1 [json_name = "current_page"];
+  int32 per_page = 2 [json_name = "per_page"];
+  int64 total_items = 3 [json_name = "total_items"];
+  int32 total_pages = 4 [json_name = "total_pages"];
+}
+
+message MessageResponse {
+  string message = 1 [json_name = "message"];
+  string error = 2 [json_name = "error"];
+}
+
+// =============================================================================
+// 1. Banner Models & Messages
+// =============================================================================
+
+message BannerData {
+  string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
+  string title = 3 [json_name = "title"];
+  string subtitle = 4 [json_name = "subtitle"];
+  string description = 5 [json_name = "description"];
+  string image_url = 6 [json_name = "image_url"];
+  string mobile_image_url = 7 [json_name = "mobile_image_url"];
+  string target_url = 8 [json_name = "target_url"];
+  string button_text = 9 [json_name = "button_text"];
+  string position = 10 [json_name = "position"];
+  int32 sequence_order = 11 [json_name = "sequence_order"];
+  string start_date = 12 [json_name = "start_date"];
+  string end_date = 13 [json_name = "end_date"];
+  bool is_active = 14 [json_name = "is_active"];
+  string additional_data = 15 [json_name = "additional_data"];
+  string created_at = 16 [json_name = "created_at"];
+  string updated_at = 17 [json_name = "updated_at"];
+}
+
+message ListBannersRequest {
+  string app_id = 1 [json_name = "app_id"];
+  string position = 2 [json_name = "position"];
+  int32 page = 3 [json_name = "page"];
+  int32 per_page = 4 [json_name = "per_page"];
+}
+
+message ListBannersResponse {
+  string message = 1 [json_name = "message"];
+  string error = 2 [json_name = "error"];
+  repeated BannerData data = 3 [json_name = "data"];
+  PaginationMeta pagination = 4 [json_name = "pagination"];
+}
+
+message GetBannerRequest {
+  string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
+}
+
+message BannerResponse {
+  string message = 1 [json_name = "message"];
+  string error = 2 [json_name = "error"];
+  BannerData data = 3 [json_name = "data"];
+}
+
+message CreateBannerRequest {
+  string app_id = 1 [json_name = "app_id"];
+  string title = 2 [json_name = "title"];
+  string subtitle = 3 [json_name = "subtitle"];
+  string description = 4 [json_name = "description"];
+  string image_url = 5 [json_name = "image_url"];
+  string mobile_image_url = 6 [json_name = "mobile_image_url"];
+  string target_url = 7 [json_name = "target_url"];
+  string button_text = 8 [json_name = "button_text"];
+  string position = 9 [json_name = "position"];
+  int32 sequence_order = 10 [json_name = "sequence_order"];
+  string start_date = 11 [json_name = "start_date"];
+  string end_date = 12 [json_name = "end_date"];
+  bool is_active = 13 [json_name = "is_active"];
+  string additional_data = 14 [json_name = "additional_data"];
+}
+
+message UpdateBannerRequest {
+  string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
+  string title = 3 [json_name = "title"];
+  string subtitle = 4 [json_name = "subtitle"];
+  string description = 5 [json_name = "description"];
+  string image_url = 6 [json_name = "image_url"];
+  string mobile_image_url = 7 [json_name = "mobile_image_url"];
+  string target_url = 8 [json_name = "target_url"];
+  string button_text = 9 [json_name = "button_text"];
+  string position = 10 [json_name = "position"];
+  int32 sequence_order = 11 [json_name = "sequence_order"];
+  string start_date = 12 [json_name = "start_date"];
+  string end_date = 13 [json_name = "end_date"];
+  bool is_active = 14 [json_name = "is_active"];
+  string additional_data = 15 [json_name = "additional_data"];
+}
+
+message DeleteBannerRequest {
+  string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
+}
+
+// =============================================================================
+// 2. Blog Category & Article Models & Messages
+// =============================================================================
+
+message BlogCategoryData {
+  string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
+  string name = 3 [json_name = "name"];
+  string slug = 4 [json_name = "slug"];
+  string description = 5 [json_name = "description"];
+  bool is_active = 6 [json_name = "is_active"];
+  string created_at = 7 [json_name = "created_at"];
+}
+
+message ListBlogCategoriesRequest {
+  string app_id = 1 [json_name = "app_id"];
+}
+
+message ListBlogCategoriesResponse {
+  string message = 1 [json_name = "message"];
+  string error = 2 [json_name = "error"];
+  repeated BlogCategoryData data = 3 [json_name = "data"];
+}
+
+message CreateBlogCategoryRequest {
+  string app_id = 1 [json_name = "app_id"];
+  string name = 2 [json_name = "name"];
+  string slug = 3 [json_name = "slug"];
+  string description = 4 [json_name = "description"];
+}
+
+message BlogCategoryResponse {
+  string message = 1 [json_name = "message"];
+  string error = 2 [json_name = "error"];
+  BlogCategoryData data = 3 [json_name = "data"];
+}
+
+message BlogData {
+  string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
+  string category_id = 3 [json_name = "category_id"];
+  string category_name = 4 [json_name = "category_name"];
+  string category_slug = 5 [json_name = "category_slug"];
+  string author_name = 6 [json_name = "author_name"];
+  string title = 7 [json_name = "title"];
+  string slug = 8 [json_name = "slug"];
+  string excerpt = 9 [json_name = "excerpt"];
+  string body = 10 [json_name = "body"];
+  string thumbnail_url = 11 [json_name = "thumbnail_url"];
+  repeated string tags = 12 [json_name = "tags"];
+  string meta_title = 13 [json_name = "meta_title"];
+  string meta_description = 14 [json_name = "meta_description"];
+  string status = 15 [json_name = "status"];
+  bool is_featured = 16 [json_name = "is_featured"];
+  int64 view_count = 17 [json_name = "view_count"];
+  string published_at = 18 [json_name = "published_at"];
+  string created_at = 19 [json_name = "created_at"];
+  string updated_at = 20 [json_name = "updated_at"];
+}
+
+message ListBlogsRequest {
+  string app_id = 1 [json_name = "app_id"];
+  string category_id = 2 [json_name = "category_id"];
+  string status = 3 [json_name = "status"];
+  string search = 4 [json_name = "search"];
+  int32 page = 5 [json_name = "page"];
+  int32 per_page = 6 [json_name = "per_page"];
+}
+
+message ListBlogsResponse {
+  string message = 1 [json_name = "message"];
+  string error = 2 [json_name = "error"];
+  repeated BlogData data = 3 [json_name = "data"];
+  PaginationMeta pagination = 4 [json_name = "pagination"];
+}
+
+message GetBlogRequest {
+  string id = 1 [json_name = "id"];
+  string slug = 2 [json_name = "slug"];
+  string app_id = 3 [json_name = "app_id"];
+}
+
+message BlogResponse {
+  string message = 1 [json_name = "message"];
+  string error = 2 [json_name = "error"];
+  BlogData data = 3 [json_name = "data"];
+}
+
+message CreateBlogRequest {
+  string app_id = 1 [json_name = "app_id"];
+  string category_id = 2 [json_name = "category_id"];
+  string author_name = 3 [json_name = "author_name"];
+  string title = 4 [json_name = "title"];
+  string slug = 5 [json_name = "slug"];
+  string excerpt = 6 [json_name = "excerpt"];
+  string body = 7 [json_name = "body"];
+  string thumbnail_url = 8 [json_name = "thumbnail_url"];
+  repeated string tags = 9 [json_name = "tags"];
+  string meta_title = 10 [json_name = "meta_title"];
+  string meta_description = 11 [json_name = "meta_description"];
+  string status = 12 [json_name = "status"];
+  bool is_featured = 13 [json_name = "is_featured"];
+}
+
+message UpdateBlogRequest {
+  string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
+  string category_id = 3 [json_name = "category_id"];
+  string title = 4 [json_name = "title"];
+  string slug = 5 [json_name = "slug"];
+  string excerpt = 6 [json_name = "excerpt"];
+  string body = 7 [json_name = "body"];
+  string thumbnail_url = 8 [json_name = "thumbnail_url"];
+  repeated string tags = 9 [json_name = "tags"];
+  string meta_title = 10 [json_name = "meta_title"];
+  string meta_description = 11 [json_name = "meta_description"];
+  string status = 12 [json_name = "status"];
+  bool is_featured = 13 [json_name = "is_featured"];
+}
+
+message DeleteBlogRequest {
+  string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
+}
+
+// =============================================================================
+// 3. Gallery Models & Messages
+// =============================================================================
+
+message GalleryItemData {
+  string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
+  string gallery_id = 3 [json_name = "gallery_id"];
+  string title = 4 [json_name = "title"];
+  string caption = 5 [json_name = "caption"];
+  string media_type = 6 [json_name = "media_type"];
+  string media_url = 7 [json_name = "media_url"];
+  string thumbnail_url = 8 [json_name = "thumbnail_url"];
+  int32 sequence_order = 9 [json_name = "sequence_order"];
+  bool is_active = 10 [json_name = "is_active"];
+}
+
+message GalleryData {
+  string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
+  string title = 3 [json_name = "title"];
+  string slug = 4 [json_name = "slug"];
+  string description = 5 [json_name = "description"];
+  string category = 6 [json_name = "category"];
+  string cover_url = 7 [json_name = "cover_url"];
+  bool is_active = 8 [json_name = "is_active"];
+  repeated GalleryItemData items = 9 [json_name = "items"];
+  string created_at = 10 [json_name = "created_at"];
+}
+
+message ListGalleriesRequest {
+  string app_id = 1 [json_name = "app_id"];
+  string category = 2 [json_name = "category"];
+  int32 page = 3 [json_name = "page"];
+  int32 per_page = 4 [json_name = "per_page"];
+}
+
+message ListGalleriesResponse {
+  string message = 1 [json_name = "message"];
+  string error = 2 [json_name = "error"];
+  repeated GalleryData data = 3 [json_name = "data"];
+  PaginationMeta pagination = 4 [json_name = "pagination"];
+}
+
+message GetGalleryRequest {
+  string id = 1 [json_name = "id"];
+  string slug = 2 [json_name = "slug"];
+  string app_id = 3 [json_name = "app_id"];
+}
+
+message GalleryResponse {
+  string message = 1 [json_name = "message"];
+  string error = 2 [json_name = "error"];
+  GalleryData data = 3 [json_name = "data"];
+}
+
+message CreateGalleryRequest {
+  string app_id = 1 [json_name = "app_id"];
+  string title = 2 [json_name = "title"];
+  string slug = 3 [json_name = "slug"];
+  string description = 4 [json_name = "description"];
+  string category = 5 [json_name = "category"];
+  string cover_url = 6 [json_name = "cover_url"];
+}
+
+message DeleteGalleryRequest {
+  string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
+}
+
+message AddGalleryItemRequest {
+  string gallery_id = 1 [json_name = "gallery_id"];
+  string app_id = 2 [json_name = "app_id"];
+  string title = 3 [json_name = "title"];
+  string caption = 4 [json_name = "caption"];
+  string media_type = 5 [json_name = "media_type"];
+  string media_url = 6 [json_name = "media_url"];
+  string thumbnail_url = 7 [json_name = "thumbnail_url"];
+  int32 sequence_order = 8 [json_name = "sequence_order"];
+}
+
+message GalleryItemResponse {
+  string message = 1 [json_name = "message"];
+  string error = 2 [json_name = "error"];
+  GalleryItemData data = 3 [json_name = "data"];
+}
+
+message DeleteGalleryItemRequest {
+  string id = 1 [json_name = "id"];
+}
+
+// =============================================================================
+// 4. Other Contents (Custom Blocks, FAQs, Testimonials)
+// =============================================================================
+
+message CustomBlockData {
+  string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
+  string section_key = 3 [json_name = "section_key"];
+  string content_type = 4 [json_name = "content_type"];
+  string title = 5 [json_name = "title"];
+  string subtitle = 6 [json_name = "subtitle"];
+  string body = 7 [json_name = "body"];
+  string image_url = 8 [json_name = "image_url"];
+  string metadata = 9 [json_name = "metadata"];
+  int32 sequence_order = 10 [json_name = "sequence_order"];
+  bool is_active = 11 [json_name = "is_active"];
+}
+
+message ListCustomBlocksRequest {
+  string app_id = 1 [json_name = "app_id"];
+  string content_type = 2 [json_name = "content_type"];
+}
+
+message ListCustomBlocksResponse {
+  string message = 1 [json_name = "message"];
+  string error = 2 [json_name = "error"];
+  repeated CustomBlockData data = 3 [json_name = "data"];
+}
+
+message GetCustomBlockRequest {
+  string section_key = 1 [json_name = "section_key"];
+  string app_id = 2 [json_name = "app_id"];
+}
+
+message CustomBlockResponse {
+  string message = 1 [json_name = "message"];
+  string error = 2 [json_name = "error"];
+  CustomBlockData data = 3 [json_name = "data"];
+}
+
+message UpsertCustomBlockRequest {
+  string app_id = 1 [json_name = "app_id"];
+  string section_key = 2 [json_name = "section_key"];
+  string content_type = 3 [json_name = "content_type"];
+  string title = 4 [json_name = "title"];
+  string subtitle = 5 [json_name = "subtitle"];
+  string body = 6 [json_name = "body"];
+  string image_url = 7 [json_name = "image_url"];
+  string metadata = 8 [json_name = "metadata"];
+  int32 sequence_order = 9 [json_name = "sequence_order"];
+  bool is_active = 10 [json_name = "is_active"];
+}
+
+message DeleteCustomBlockRequest {
+  string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
+}
+
+message FAQData {
+  string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
+  string category = 3 [json_name = "category"];
+  string question = 4 [json_name = "question"];
+  string answer = 5 [json_name = "answer"];
+  int32 sequence_order = 6 [json_name = "sequence_order"];
+  bool is_active = 7 [json_name = "is_active"];
+}
+
+message ListFAQsRequest {
+  string app_id = 1 [json_name = "app_id"];
+  string category = 2 [json_name = "category"];
+}
+
+message ListFAQsResponse {
+  string message = 1 [json_name = "message"];
+  string error = 2 [json_name = "error"];
+  repeated FAQData data = 3 [json_name = "data"];
+}
+
+message CreateFAQRequest {
+  string app_id = 1 [json_name = "app_id"];
+  string category = 2 [json_name = "category"];
+  string question = 3 [json_name = "question"];
+  string answer = 4 [json_name = "answer"];
+  int32 sequence_order = 5 [json_name = "sequence_order"];
+}
+
+message UpdateFAQRequest {
+  string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
+  string category = 3 [json_name = "category"];
+  string question = 4 [json_name = "question"];
+  string answer = 5 [json_name = "answer"];
+  int32 sequence_order = 6 [json_name = "sequence_order"];
+  bool is_active = 7 [json_name = "is_active"];
+}
+
+message FAQResponse {
+  string message = 1 [json_name = "message"];
+  string error = 2 [json_name = "error"];
+  FAQData data = 3 [json_name = "data"];
+}
+
+message DeleteFAQRequest {
+  string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
+}
+
+message TestimonialData {
+  string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
+  string customer_name = 3 [json_name = "customer_name"];
+  string customer_title = 4 [json_name = "customer_title"];
+  string avatar_url = 5 [json_name = "avatar_url"];
+  int32 rating = 6 [json_name = "rating"];
+  string comment = 7 [json_name = "comment"];
+  string package_name = 8 [json_name = "package_name"];
+  bool is_featured = 9 [json_name = "is_featured"];
+  bool is_active = 10 [json_name = "is_active"];
+  string created_at = 11 [json_name = "created_at"];
+}
+
+message ListTestimonialsRequest {
+  string app_id = 1 [json_name = "app_id"];
+  int32 page = 2 [json_name = "page"];
+  int32 per_page = 3 [json_name = "per_page"];
+}
+
+message ListTestimonialsResponse {
+  string message = 1 [json_name = "message"];
+  string error = 2 [json_name = "error"];
+  repeated TestimonialData data = 3 [json_name = "data"];
+  PaginationMeta pagination = 4 [json_name = "pagination"];
+}
+
+message CreateTestimonialRequest {
+  string app_id = 1 [json_name = "app_id"];
+  string customer_name = 2 [json_name = "customer_name"];
+  string customer_title = 3 [json_name = "customer_title"];
+  string avatar_url = 4 [json_name = "avatar_url"];
+  int32 rating = 5 [json_name = "rating"];
+  string comment = 6 [json_name = "comment"];
+  string package_name = 7 [json_name = "package_name"];
+  bool is_featured = 8 [json_name = "is_featured"];
+}
+
+message UpdateTestimonialRequest {
+  string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
+  string customer_name = 3 [json_name = "customer_name"];
+  string customer_title = 4 [json_name = "customer_title"];
+  string avatar_url = 5 [json_name = "avatar_url"];
+  int32 rating = 6 [json_name = "rating"];
+  string comment = 7 [json_name = "comment"];
+  string package_name = 8 [json_name = "package_name"];
+  bool is_featured = 9 [json_name = "is_featured"];
+  bool is_active = 10 [json_name = "is_active"];
+}
+
+message TestimonialResponse {
+  string message = 1 [json_name = "message"];
+  string error = 2 [json_name = "error"];
+  TestimonialData data = 3 [json_name = "data"];
+}
+
+message DeleteTestimonialRequest {
+  string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
+}
+
+// =============================================================================
+// 5. Media Upload Models & Messages
+// =============================================================================
+
+message UploadMediaRequest {
+  string filename = 1 [json_name = "filename"];
+  string base64_content = 2 [json_name = "base64_content"];
+  string folder = 3 [json_name = "folder"];
+  string app_id = 4 [json_name = "app_id"];
+}
+
+message MediaUploadData {
+  string file_url = 1 [json_name = "file_url"];
+  string file_path = 2 [json_name = "file_path"];
+  string filename = 3 [json_name = "filename"];
+  int64 file_size = 4 [json_name = "file_size"];
+  string mime_type = 5 [json_name = "mime_type"];
+}
+
+message UploadMediaResponse {
+  string message = 1 [json_name = "message"];
+  string error = 2 [json_name = "error"];
+  MediaUploadData data = 3 [json_name = "data"];
+}
