@@ -3,6 +3,8 @@ package content_test
 import (
 	"context"
 	"fmt"
+	"sort"
+	"strings"
 	"testing"
 	"time"
 
@@ -15,14 +17,16 @@ import (
 )
 
 type mockContentRepo struct {
-	banners      map[string]*entity.ContentBanner
-	categories   map[string]*entity.ContentBlogCategory
-	blogs        map[string]*entity.ContentBlog
-	galleries    map[string]*entity.ContentGallery
-	galleryItems map[uuid.UUID]*entity.ContentGalleryItem
-	customBlocks map[string]*entity.ContentCustomBlock
-	faqs         map[string]*entity.ContentFAQ
-	testimonials map[string]*entity.ContentTestimonial
+	banners            map[string]*entity.ContentBanner
+	categories         map[string]*entity.ContentBlogCategory
+	blogs              map[string]*entity.ContentBlog
+	galleries          map[string]*entity.ContentGallery
+	galleryItems       map[uuid.UUID]*entity.ContentGalleryItem
+	customBlocks       map[string]*entity.ContentCustomBlock
+	faqs               map[string]*entity.ContentFAQ
+	testimonials       map[string]*entity.ContentTestimonial
+	blogCategoryFilter entity.ListBlogCategoriesFilter
+	blogCategoryTotal  int64
 }
 
 func newMockRepo() *mockContentRepo {
@@ -89,13 +93,31 @@ func (m *mockContentRepo) DeleteBanner(ctx context.Context, appID string, id uui
 }
 
 func (m *mockContentRepo) ListBlogCategories(ctx context.Context, filter entity.ListBlogCategoriesFilter) ([]*entity.ContentBlogCategory, int64, error) {
+	m.blogCategoryFilter = filter
 	var list []*entity.ContentBlogCategory
 	for _, c := range m.categories {
-		if c.AppID == filter.AppID {
-			list = append(list, c)
+		if c.AppID != filter.AppID || (filter.IsActive != nil && c.IsActive != *filter.IsActive) {
+			continue
 		}
+		if search := strings.TrimSpace(filter.Search); search != "" && !strings.Contains(strings.ToLower(c.Name+" "+c.Description), strings.ToLower(search)) {
+			continue
+		}
+		list = append(list, c)
 	}
-	return list, int64(len(list)), nil
+	sort.Slice(list, func(i, j int) bool { return list[i].Name < list[j].Name })
+	total := int64(len(list))
+	if m.blogCategoryTotal > total {
+		total = m.blogCategoryTotal
+	}
+	start := int(filter.Offset)
+	if start >= len(list) {
+		return []*entity.ContentBlogCategory{}, total, nil
+	}
+	end := start + int(filter.Limit)
+	if end > len(list) {
+		end = len(list)
+	}
+	return list[start:end], total, nil
 }
 
 func (m *mockContentRepo) GetBlogCategoryByID(ctx context.Context, appID string, id uuid.UUID) (*entity.ContentBlogCategory, error) {
@@ -278,11 +300,24 @@ func (m *mockContentRepo) DeleteGalleryItem(ctx context.Context, appID string, i
 func (m *mockContentRepo) ListCustomBlocks(ctx context.Context, filter entity.ListCustomBlocksFilter) ([]*entity.ContentCustomBlock, int64, error) {
 	var list []*entity.ContentCustomBlock
 	for _, b := range m.customBlocks {
-		if b.AppID == filter.AppID {
-			list = append(list, b)
+		if b.AppID != filter.AppID || (filter.ContentType != "" && b.ContentType != filter.ContentType) || (filter.IsActive != nil && b.IsActive != *filter.IsActive) {
+			continue
 		}
+		if search := strings.TrimSpace(filter.Search); search != "" && !strings.Contains(strings.ToLower(b.SectionKey+" "+b.Title), strings.ToLower(search)) {
+			continue
+		}
+		list = append(list, b)
 	}
-	return list, int64(len(list)), nil
+	total := int64(len(list))
+	start := int(filter.Offset)
+	if start >= len(list) {
+		return []*entity.ContentCustomBlock{}, total, nil
+	}
+	end := start + int(filter.Limit)
+	if end > len(list) {
+		end = len(list)
+	}
+	return list[start:end], total, nil
 }
 
 func (m *mockContentRepo) GetCustomBlockBySection(ctx context.Context, appID, sectionKey string) (*entity.ContentCustomBlock, error) {
@@ -316,11 +351,24 @@ func (m *mockContentRepo) DeleteCustomBlock(ctx context.Context, appID string, i
 func (m *mockContentRepo) ListFAQs(ctx context.Context, filter entity.ListFAQsFilter) ([]*entity.ContentFAQ, int64, error) {
 	var list []*entity.ContentFAQ
 	for _, f := range m.faqs {
-		if f.AppID == filter.AppID {
-			list = append(list, f)
+		if f.AppID != filter.AppID || (filter.Category != "" && f.Category != filter.Category) || (filter.IsActive != nil && f.IsActive != *filter.IsActive) {
+			continue
 		}
+		if search := strings.TrimSpace(filter.Search); search != "" && !strings.Contains(strings.ToLower(f.Question+" "+f.Answer), strings.ToLower(search)) {
+			continue
+		}
+		list = append(list, f)
 	}
-	return list, int64(len(list)), nil
+	total := int64(len(list))
+	start := int(filter.Offset)
+	if start >= len(list) {
+		return []*entity.ContentFAQ{}, total, nil
+	}
+	end := start + int(filter.Limit)
+	if end > len(list) {
+		end = len(list)
+	}
+	return list[start:end], total, nil
 }
 
 func (m *mockContentRepo) CreateFAQ(ctx context.Context, faq *entity.ContentFAQ) (*entity.ContentFAQ, error) {
@@ -435,6 +483,41 @@ func TestContentUsecase_Banners(t *testing.T) {
 	// 5. Delete banner
 	if err := uc.DeleteBanner(ctx, "umroh", b.ID); err != nil {
 		t.Fatalf("delete banner failed: %v", err)
+	}
+}
+
+func TestContentUsecase_ListBlogCategoriesSearchPaginationAndEmptyResults(t *testing.T) {
+	repo := newMockRepo()
+	repo.categories["umroh:1"] = &entity.ContentBlogCategory{ID: uuid.New(), AppID: "umroh", Name: "Tips Tawaf", Description: "Walking guide", IsActive: true}
+	repo.categories["umroh:2"] = &entity.ContentBlogCategory{ID: uuid.New(), AppID: "umroh", Name: "Tips Ihram", Description: "Preparation", IsActive: true}
+	repo.categories["umroh:3"] = &entity.ContentBlogCategory{ID: uuid.New(), AppID: "umroh", Name: "Food", Description: "Meal guide", IsActive: true}
+	uc := content.NewContentUsecase(repo, storage.NewLocalStorageService(t.TempDir(), "http://localhost:50055/storage/uploads"))
+
+	active := true
+	page, meta, err := uc.ListBlogCategories(context.Background(), entity.ListBlogCategoriesFilter{
+		AppID: "umroh", Search: "tips", IsActive: &active, Limit: 1, Offset: 1,
+	})
+	if err != nil {
+		t.Fatalf("list categories page 2: %v", err)
+	}
+	if repo.blogCategoryFilter.Search != "tips" || repo.blogCategoryFilter.IsActive == nil || !*repo.blogCategoryFilter.IsActive {
+		t.Fatalf("repository filter = %+v, search/is_active not passed through", repo.blogCategoryFilter)
+	}
+	if len(page) != 1 || page[0].Name != "Tips Tawaf" {
+		t.Fatalf("page 2 = %+v, want one matching result", page)
+	}
+	if meta.CurrentPage != 2 || meta.PerPage != 1 || meta.TotalItems != 2 || meta.TotalPages != 2 {
+		t.Fatalf("page 2 metadata = %+v, want current=2 per_page=1 total=2 pages=2", meta)
+	}
+
+	empty, emptyMeta, err := uc.ListBlogCategories(context.Background(), entity.ListBlogCategoriesFilter{
+		AppID: "umroh", Search: "no match", Limit: 10,
+	})
+	if err != nil {
+		t.Fatalf("list categories with no matches: %v", err)
+	}
+	if len(empty) != 0 || emptyMeta.TotalItems != 0 || emptyMeta.TotalPages != 0 {
+		t.Fatalf("empty results = %d metadata=%+v, want total_items=0 total_pages=0", len(empty), emptyMeta)
 	}
 }
 

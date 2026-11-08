@@ -7,27 +7,36 @@ import (
 	"time"
 
 	"content-service/internal/delivery/grpc/handler"
+	"content-service/internal/delivery/grpc/interceptor"
 	"content-service/internal/delivery/grpc/pb"
 	"content-service/internal/domain/entity"
 	domainErrors "content-service/internal/domain/errors"
+	"content-service/internal/infrastructure/security"
 	"content-service/internal/infrastructure/storage"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
 type mockContentUsecase struct {
-	banner    *entity.ContentBanner
-	blog      *entity.ContentBlog
-	gallery   *entity.ContentGallery
-	block     *entity.ContentCustomBlock
-	faq       *entity.ContentFAQ
-	testimoni *entity.ContentTestimonial
+	blogCategoriesFilter entity.ListBlogCategoriesFilter
+	blogsFilter          entity.ListBlogsFilter
+	bannerFilter         entity.ListBannersFilter
+	banner               *entity.ContentBanner
+	blog                 *entity.ContentBlog
+	gallery              *entity.ContentGallery
+	block                *entity.ContentCustomBlock
+	faq                  *entity.ContentFAQ
+	testimoni            *entity.ContentTestimonial
+	updateGalleryErr     error
 }
 
 func (m *mockContentUsecase) ListBanners(ctx context.Context, filter entity.ListBannersFilter) ([]*entity.ContentBanner, *entity.PaginationMeta, error) {
+	m.bannerFilter = filter
 	if m.banner != nil {
 		return []*entity.ContentBanner{m.banner}, &entity.PaginationMeta{CurrentPage: 1, PerPage: 10, TotalItems: 1, TotalPages: 1}, nil
 	}
@@ -61,9 +70,15 @@ func (m *mockContentUsecase) DeleteBanner(ctx context.Context, appID string, id 
 }
 
 func (m *mockContentUsecase) ListBlogCategories(ctx context.Context, filter entity.ListBlogCategoriesFilter) ([]*entity.ContentBlogCategory, *entity.PaginationMeta, error) {
-	return []*entity.ContentBlogCategory{
+	m.blogCategoriesFilter = filter
+	categories := []*entity.ContentBlogCategory{
 		{ID: uuid.New(), AppID: filter.AppID, Name: "Tips", Slug: "tips", IsActive: true},
-	}, &entity.PaginationMeta{CurrentPage: 1, PerPage: 10, TotalItems: 1, TotalPages: 1}, nil
+		{ID: uuid.New(), AppID: filter.AppID, Name: "Hidden", Slug: "hidden", IsActive: false},
+	}
+	if filter.IsActive != nil && *filter.IsActive {
+		categories = categories[:1]
+	}
+	return categories, &entity.PaginationMeta{CurrentPage: filter.Offset/filter.Limit + 1, PerPage: filter.Limit, TotalItems: int64(len(categories)), TotalPages: 1}, nil
 }
 
 func (m *mockContentUsecase) CreateBlogCategory(ctx context.Context, category *entity.ContentBlogCategory) (*entity.ContentBlogCategory, error) {
@@ -78,6 +93,10 @@ func (m *mockContentUsecase) UpdateBlogCategory(ctx context.Context, category *e
 }
 
 func (m *mockContentUsecase) ListBlogs(ctx context.Context, filter entity.ListBlogsFilter) ([]*entity.ContentBlog, *entity.PaginationMeta, error) {
+	m.blogsFilter = filter
+	if filter.Status != "" && m.blog != nil && m.blog.Status != filter.Status {
+		return []*entity.ContentBlog{}, &entity.PaginationMeta{CurrentPage: 1, PerPage: filter.Limit, TotalItems: 0, TotalPages: 0}, nil
+	}
 	if m.blog != nil {
 		return []*entity.ContentBlog{m.blog}, &entity.PaginationMeta{CurrentPage: 1, PerPage: 10, TotalItems: 1, TotalPages: 1}, nil
 	}
@@ -131,6 +150,9 @@ func (m *mockContentUsecase) CreateGallery(ctx context.Context, gallery *entity.
 }
 
 func (m *mockContentUsecase) UpdateGallery(ctx context.Context, gallery *entity.ContentGallery) (*entity.ContentGallery, error) {
+	if m.updateGalleryErr != nil {
+		return nil, m.updateGalleryErr
+	}
 	gallery.UpdatedAt = time.Now()
 	m.gallery = gallery
 	return gallery, nil
@@ -267,6 +289,108 @@ func TestContentHandler_CreateAndListBanners(t *testing.T) {
 	_, err = h.GetBanner(ctx, &pb.GetBannerRequest{Id: uuid.New().String()})
 	if status.Code(err) != codes.NotFound {
 		t.Errorf("expected NotFound error, got %v", status.Code(err))
+	}
+}
+
+func TestContentHandler_AdminCanListInactiveBlogCategories(t *testing.T) {
+	const secret = "test-secret-for-public-filter"
+	claims := security.Claims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   uuid.NewString(),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
+		},
+		AppID:     "umroh",
+		Role:      "admin",
+		TokenType: "access",
+	}
+	jwtToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(secret))
+	if err != nil {
+		t.Fatalf("sign test token: %v", err)
+	}
+
+	uc := &mockContentUsecase{}
+	h := handler.NewContentHandler(uc)
+	ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs("authorization", "Bearer "+jwtToken))
+	ic := interceptor.AuthInterceptor(security.NewJWTValidator(secret))
+	info := &grpc.UnaryServerInfo{FullMethod: "/content.v1.ContentService/ListBlogCategories"}
+	var response *pb.ListBlogCategoriesResponse
+	_, err = ic(ctx, &pb.ListBlogCategoriesRequest{PerPage: 10}, info, func(ctx context.Context, req interface{}) (interface{}, error) {
+		response, err = h.ListBlogCategories(ctx, req.(*pb.ListBlogCategoriesRequest))
+		return response, err
+	})
+	if err != nil {
+		t.Fatalf("admin ListBlogCategories: %v", err)
+	}
+	if uc.blogCategoriesFilter.IsActive != nil {
+		t.Fatalf("admin filter IsActive = %v, want nil", uc.blogCategoriesFilter.IsActive)
+	}
+	if len(response.Data) != 2 {
+		t.Fatalf("admin categories = %d, want active and inactive", len(response.Data))
+	}
+}
+
+func TestContentHandler_UpdateGalleryDuplicateSlugReturnsAlreadyExists(t *testing.T) {
+	uc := &mockContentUsecase{updateGalleryErr: domainErrors.ErrDuplicateSlug}
+	h := handler.NewContentHandler(uc)
+	_, err := h.UpdateGallery(context.Background(), &pb.UpdateGalleryRequest{
+		Id: uuid.NewString(), AppId: "umroh", Title: "Summer", Slug: "same-slug", Category: "GENERAL",
+	})
+	if status.Code(err) != codes.AlreadyExists {
+		t.Fatalf("duplicate slug code = %v, want AlreadyExists (err=%v)", status.Code(err), err)
+	}
+}
+
+func TestContentHandler_PublicFiltersAndPagination(t *testing.T) {
+	uc := &mockContentUsecase{}
+	h := handler.NewContentHandler(uc)
+
+	categories, err := h.ListBlogCategories(context.Background(), &pb.ListBlogCategoriesRequest{
+		Search:  "ti",
+		Page:    2,
+		PerPage: 5,
+	})
+	if err != nil {
+		t.Fatalf("ListBlogCategories: %v", err)
+	}
+	if uc.blogCategoriesFilter.IsActive == nil || !*uc.blogCategoriesFilter.IsActive {
+		t.Fatal("public ListBlogCategories must request active categories only")
+	}
+	if uc.blogCategoriesFilter.Search != "ti" || uc.blogCategoriesFilter.Offset != 5 || uc.blogCategoriesFilter.Limit != 5 {
+		t.Fatalf("category filter = %+v, want search=ti offset=5 limit=5", uc.blogCategoriesFilter)
+	}
+	if categories.Pagination == nil || categories.Pagination.CurrentPage != 2 || categories.Pagination.PerPage != 5 {
+		t.Fatalf("pagination = %+v, want page 2 and per_page 5", categories.Pagination)
+	}
+	if len(categories.Data) != 1 || !categories.Data[0].IsActive {
+		t.Fatalf("public categories = %+v, want only active category", categories.Data)
+	}
+
+	activeBanner := true
+	banners, err := h.ListBanners(context.Background(), &pb.ListBannersRequest{})
+	if err != nil {
+		t.Fatalf("ListBanners: %v", err)
+	}
+	if uc.bannerFilter.IsActive == nil || *uc.bannerFilter.IsActive != activeBanner {
+		t.Fatalf("public banner filter = %+v, want IsActive=true", uc.bannerFilter)
+	}
+	if banners.Pagination == nil {
+		t.Fatal("expected banner list pagination metadata")
+	}
+
+	draft := &entity.ContentBlog{ID: uuid.New(), Status: entity.BlogStatusDraft}
+	uc.blog = draft
+	publicBlogs, err := h.ListBlogs(context.Background(), &pb.ListBlogsRequest{Status: entity.BlogStatusDraft})
+	if err != nil {
+		t.Fatalf("public ListBlogs: %v", err)
+	}
+	if uc.blogsFilter.Status != entity.BlogStatusPublished || len(publicBlogs.Data) != 0 {
+		t.Fatalf("public blogs filter=%+v data=%d, expected published-only", uc.blogsFilter, len(publicBlogs.Data))
+	}
+
+	bannerID := uuid.New()
+	uc.banner = &entity.ContentBanner{ID: bannerID, IsActive: false}
+	if _, err := h.GetBanner(context.Background(), &pb.GetBannerRequest{Id: bannerID.String()}); status.Code(err) != codes.NotFound {
+		t.Fatalf("inactive public banner code = %v, want NotFound", status.Code(err))
 	}
 }
 

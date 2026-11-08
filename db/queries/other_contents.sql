@@ -1,7 +1,7 @@
 -- 1. Custom Blocks
 
 -- name: ListCustomBlocks :many
-SELECT id, app_id, section_key, content_type, title, subtitle, body, image_url, metadata, sequence_order, is_active, created_at, updated_at
+SELECT id, app_id, section_key, content_type, title, subtitle, body, image_url, metadata, sequence_order, is_active, created_at, updated_at, image_key
 FROM content_custom_blocks
 WHERE app_id = sqlc.arg('app_id')
   AND (sqlc.narg('content_type')::text IS NULL OR sqlc.narg('content_type')::text = '' OR content_type = sqlc.narg('content_type'))
@@ -11,15 +11,15 @@ ORDER BY sequence_order ASC, created_at ASC
 LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
 
 -- name: GetCustomBlockBySection :one
-SELECT id, app_id, section_key, content_type, title, subtitle, body, image_url, metadata, sequence_order, is_active, created_at, updated_at
+SELECT id, app_id, section_key, content_type, title, subtitle, body, image_url, metadata, sequence_order, is_active, created_at, updated_at, image_key
 FROM content_custom_blocks
 WHERE app_id = $1 AND section_key = $2;
 
 -- name: UpsertCustomBlock :one
 INSERT INTO content_custom_blocks (
-    app_id, section_key, content_type, title, subtitle, body, image_url, metadata, sequence_order, is_active
+    app_id, section_key, content_type, title, subtitle, body, image_url, metadata, sequence_order, is_active, image_key
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
 )
 ON CONFLICT (app_id, section_key) DO UPDATE SET
     content_type = EXCLUDED.content_type,
@@ -30,6 +30,7 @@ ON CONFLICT (app_id, section_key) DO UPDATE SET
     metadata = EXCLUDED.metadata,
     sequence_order = EXCLUDED.sequence_order,
     is_active = EXCLUDED.is_active,
+    image_key = EXCLUDED.image_key,
     updated_at = CURRENT_TIMESTAMP
 RETURNING *;
 
@@ -91,7 +92,7 @@ WHERE id = $1 AND app_id = $2;
 -- 3. Testimonials
 
 -- name: ListTestimonials :many
-SELECT id, app_id, customer_name, customer_title, avatar_url, rating, comment, package_name, is_featured, is_active, created_at, updated_at
+SELECT id, app_id, customer_name, customer_title, avatar_url, rating, comment, package_name, is_featured, is_active, created_at, updated_at, avatar_key
 FROM content_testimonials
 WHERE app_id = sqlc.arg('app_id')
   AND (sqlc.narg('is_active')::boolean IS NULL OR is_active = sqlc.narg('is_active'))
@@ -108,9 +109,9 @@ WHERE app_id = sqlc.arg('app_id')
 
 -- name: CreateTestimonial :one
 INSERT INTO content_testimonials (
-    app_id, customer_name, customer_title, avatar_url, rating, comment, package_name, is_featured, is_active
+    app_id, customer_name, customer_title, avatar_url, rating, comment, package_name, is_featured, is_active, avatar_key
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 )
 RETURNING *;
 
@@ -124,7 +125,8 @@ SET
     comment = $7,
     package_name = $8,
     is_featured = $9,
-    is_active = $10
+    is_active = $10,
+    avatar_key = $11
 WHERE id = $1 AND app_id = $2
 RETURNING *;
 

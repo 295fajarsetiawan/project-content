@@ -100,6 +100,8 @@ message BannerData {
   string additional_data = 15 [json_name = "additional_data"];
   string created_at = 16 [json_name = "created_at"];
   string updated_at = 17 [json_name = "updated_at"];
+  string image_key = 18 [json_name = "image_key"];
+  string mobile_image_key = 19 [json_name = "mobile_image_key"];
 }
 
 message ListBannersRequest {
@@ -142,6 +144,8 @@ message CreateBannerRequest {
   string end_date = 12 [json_name = "end_date"];
   bool is_active = 13 [json_name = "is_active"];
   string additional_data = 14 [json_name = "additional_data"];
+  string image_key = 15 [json_name = "image_key"];
+  string mobile_image_key = 16 [json_name = "mobile_image_key"];
 }
 
 message UpdateBannerRequest {
@@ -160,6 +164,8 @@ message UpdateBannerRequest {
   string end_date = 13 [json_name = "end_date"];
   bool is_active = 14 [json_name = "is_active"];
   string additional_data = 15 [json_name = "additional_data"];
+  string image_key = 16 [json_name = "image_key"];
+  string mobile_image_key = 17 [json_name = "mobile_image_key"];
 }
 
 message DeleteBannerRequest {
@@ -195,6 +201,8 @@ message ListBlogCategoriesResponse {
   PaginationMeta pagination = 4 [json_name = "pagination"];
 }
 
+// UpdateBlogCategory replaces the complete category representation. Clients must send
+// every field, including is_active; omitted scalar fields are treated as zero values.
 message UpdateBlogCategoryRequest {
   string id = 1 [json_name = "id"];
   string app_id = 2 [json_name = "app_id"];
@@ -238,6 +246,7 @@ message BlogData {
   string published_at = 18 [json_name = "published_at"];
   string created_at = 19 [json_name = "created_at"];
   string updated_at = 20 [json_name = "updated_at"];
+  string thumbnail_key = 21 [json_name = "thumbnail_key"];
 }
 
 message ListBlogsRequest {
@@ -282,6 +291,7 @@ message CreateBlogRequest {
   string meta_description = 11 [json_name = "meta_description"];
   string status = 12 [json_name = "status"];
   bool is_featured = 13 [json_name = "is_featured"];
+  string thumbnail_key = 14 [json_name = "thumbnail_key"];
 }
 
 message UpdateBlogRequest {
@@ -298,6 +308,7 @@ message UpdateBlogRequest {
   string meta_description = 11 [json_name = "meta_description"];
   string status = 12 [json_name = "status"];
   bool is_featured = 13 [json_name = "is_featured"];
+  string thumbnail_key = 14 [json_name = "thumbnail_key"];
 }
 
 message DeleteBlogRequest {
@@ -320,6 +331,8 @@ message GalleryItemData {
   string thumbnail_url = 8 [json_name = "thumbnail_url"];
   int32 sequence_order = 9 [json_name = "sequence_order"];
   bool is_active = 10 [json_name = "is_active"];
+  string media_key = 11 [json_name = "media_key"];
+  string thumbnail_key = 12 [json_name = "thumbnail_key"];
 }
 
 message GalleryData {
@@ -333,6 +346,7 @@ message GalleryData {
   bool is_active = 8 [json_name = "is_active"];
   repeated GalleryItemData items = 9 [json_name = "items"];
   string created_at = 10 [json_name = "created_at"];
+  string cover_key = 11 [json_name = "cover_key"];
 }
 
 message ListGalleriesRequest {
@@ -368,8 +382,11 @@ message CreateGalleryRequest {
   string description = 4 [json_name = "description"];
   string category = 5 [json_name = "category"];
   string cover_url = 6 [json_name = "cover_url"];
+  string cover_key = 7 [json_name = "cover_key"];
 }
 
+// UpdateGallery replaces the complete gallery representation. Clients must send
+// every field, including is_active; omitted scalar fields are treated as zero values.
 message UpdateGalleryRequest {
   string id = 1 [json_name = "id"];
   string app_id = 2 [json_name = "app_id"];
@@ -379,6 +396,7 @@ message UpdateGalleryRequest {
   string category = 6 [json_name = "category"];
   string cover_url = 7 [json_name = "cover_url"];
   bool is_active = 8 [json_name = "is_active"];
+  string cover_key = 9 [json_name = "cover_key"];
 }
 
 message DeleteGalleryRequest {
@@ -395,6 +413,8 @@ message AddGalleryItemRequest {
   string media_url = 6 [json_name = "media_url"];
   string thumbnail_url = 7 [json_name = "thumbnail_url"];
   int32 sequence_order = 8 [json_name = "sequence_order"];
+  string media_key = 9 [json_name = "media_key"];
+  string thumbnail_key = 10 [json_name = "thumbnail_key"];
 }
 
 message GalleryItemResponse {
@@ -424,6 +444,7 @@ message CustomBlockData {
   string metadata = 9 [json_name = "metadata"];
   int32 sequence_order = 10 [json_name = "sequence_order"];
   bool is_active = 11 [json_name = "is_active"];
+  string image_key = 12 [json_name = "image_key"];
 }
 
 message ListCustomBlocksRequest {
@@ -463,6 +484,7 @@ message UpsertCustomBlockRequest {
   string metadata = 8 [json_name = "metadata"];
   int32 sequence_order = 9 [json_name = "sequence_order"];
   bool is_active = 10 [json_name = "is_active"];
+  string image_key = 11 [json_name = "image_key"];
 }
 
 message DeleteCustomBlockRequest {
@@ -536,6 +558,7 @@ message TestimonialData {
   bool is_featured = 9 [json_name = "is_featured"];
   bool is_active = 10 [json_name = "is_active"];
   string created_at = 11 [json_name = "created_at"];
+  string avatar_key = 12 [json_name = "avatar_key"];
 }
 
 message ListTestimonialsRequest {
@@ -560,6 +583,7 @@ message CreateTestimonialRequest {
   string comment = 6 [json_name = "comment"];
   string package_name = 7 [json_name = "package_name"];
   bool is_featured = 8 [json_name = "is_featured"];
+  string avatar_key = 9 [json_name = "avatar_key"];
 }
 
 message UpdateTestimonialRequest {
@@ -573,6 +597,7 @@ message UpdateTestimonialRequest {
   string package_name = 8 [json_name = "package_name"];
   bool is_featured = 9 [json_name = "is_featured"];
   bool is_active = 10 [json_name = "is_active"];
+  string avatar_key = 11 [json_name = "avatar_key"];
 }
 
 message TestimonialResponse {

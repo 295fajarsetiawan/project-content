@@ -15,6 +15,31 @@ type PaginationMeta struct {
 	TotalPages  int32 `json:"total_pages"`
 }
 
+// NormalizePage returns a bounded page size and non-negative row offset.
+func NormalizePage(limit, offset int32) (int32, int32) {
+	if limit < 1 || limit > 100 {
+		limit = 10
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	return limit, offset
+}
+
+// NormalizePageRequest converts a 1-based page request into a bounded limit and offset.
+func NormalizePageRequest(page, perPage int32) (int32, int32) {
+	if page < 1 {
+		page = 1
+	}
+	limit, _ := NormalizePage(perPage, 0)
+	offset := (int64(page) - 1) * int64(limit)
+	maxOffset := int64(1<<31 - 1 - (1<<31-1)%limit)
+	if offset > maxOffset {
+		offset = maxOffset
+	}
+	return limit, int32(offset)
+}
+
 // -----------------------------------------------------------------------------
 // 1. Content Banner
 // -----------------------------------------------------------------------------
@@ -27,6 +52,8 @@ type ContentBanner struct {
 	Description    string                 `json:"description"`
 	ImageURL       string                 `json:"image_url"`
 	MobileImageURL string                 `json:"mobile_image_url"`
+	ImageKey       string                 `json:"image_key"`
+	MobileImageKey string                 `json:"mobile_image_key"`
 	TargetURL      string                 `json:"target_url"`
 	ButtonText     string                 `json:"button_text"`
 	Position       string                 `json:"position"` // HERO, PROMO, POPUP, SIDEBAR
@@ -41,11 +68,18 @@ type ContentBanner struct {
 }
 
 type ListBlogCategoriesFilter struct {
-	AppID  string
-	Search string
-	Limit  int32
-	Offset int32
+	AppID    string
+	Search   string
+	IsActive *bool
+	Limit    int32
+	Offset   int32
 }
+
+const (
+	BlogStatusDraft     = "DRAFT"
+	BlogStatusPublished = "PUBLISHED"
+	BlogStatusArchived  = "ARCHIVED"
+)
 
 type ListCustomBlocksFilter struct {
 	AppID       string
@@ -101,6 +135,7 @@ type ContentBlog struct {
 	Excerpt         string     `json:"excerpt"`
 	Body            string     `json:"body"`
 	ThumbnailURL    string     `json:"thumbnail_url"`
+	ThumbnailKey    string     `json:"thumbnail_key"`
 	Tags            []string   `json:"tags"`
 	MetaTitle       string     `json:"meta_title"`
 	MetaDescription string     `json:"meta_description"`
@@ -134,6 +169,7 @@ type ContentGallery struct {
 	Description string               `json:"description"`
 	Category    string               `json:"category"` // UMRAH, HAJJ, TOUR, EVENT, GENERAL
 	CoverURL    string               `json:"cover_url"`
+	CoverKey    string               `json:"cover_key"`
 	IsActive    bool                 `json:"is_active"`
 	Items       []ContentGalleryItem `json:"items,omitempty"`
 	CreatedAt   time.Time            `json:"created_at"`
@@ -149,6 +185,8 @@ type ContentGalleryItem struct {
 	MediaType     string    `json:"media_type"` // IMAGE, VIDEO
 	MediaURL      string    `json:"media_url"`
 	ThumbnailURL  string    `json:"thumbnail_url"`
+	MediaKey      string    `json:"media_key"`
+	ThumbnailKey  string    `json:"thumbnail_key"`
 	SequenceOrder int32     `json:"sequence_order"`
 	IsActive      bool      `json:"is_active"`
 	CreatedAt     time.Time `json:"created_at"`
@@ -176,6 +214,7 @@ type ContentCustomBlock struct {
 	Subtitle      string                 `json:"subtitle"`
 	Body          string                 `json:"body"`
 	ImageURL      string                 `json:"image_url"`
+	ImageKey      string                 `json:"image_key"`
 	Metadata      map[string]interface{} `json:"metadata"`
 	SequenceOrder int32                  `json:"sequence_order"`
 	IsActive      bool                   `json:"is_active"`
@@ -201,6 +240,7 @@ type ContentTestimonial struct {
 	CustomerName  string    `json:"customer_name"`
 	CustomerTitle string    `json:"customer_title"`
 	AvatarURL     string    `json:"avatar_url"`
+	AvatarKey     string    `json:"avatar_key"`
 	Rating        int32     `json:"rating"`
 	Comment       string    `json:"comment"`
 	PackageName   string    `json:"package_name"`

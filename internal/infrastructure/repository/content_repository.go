@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -20,6 +21,14 @@ import (
 type contentRepository struct {
 	pool    *pgxpool.Pool
 	queries *sqlc.Queries
+}
+
+func mapUniqueViolation(err error) error {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+		return domainErrors.ErrDuplicateSlug
+	}
+	return fmt.Errorf("repository/content-update: %w", err)
 }
 
 func NewContentRepository(pool *pgxpool.Pool) entity.ContentRepository {
@@ -130,6 +139,8 @@ func (r *contentRepository) CreateBanner(ctx context.Context, b *entity.ContentB
 		IsActive:       b.IsActive,
 		AdditionalData: additionalJSON,
 		CreatedBy:      ptrUUIDToPgtypeUUID(b.CreatedBy),
+		ImageKey:       b.ImageKey,
+		MobileImageKey: b.MobileImageKey,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("repository/create-banner: %w", err)
@@ -159,6 +170,8 @@ func (r *contentRepository) UpdateBanner(ctx context.Context, b *entity.ContentB
 		EndDate:        ptrTimeToTimestamptz(b.EndDate),
 		IsActive:       b.IsActive,
 		AdditionalData: additionalJSON,
+		ImageKey:       b.ImageKey,
+		MobileImageKey: b.MobileImageKey,
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -181,24 +194,30 @@ func (r *contentRepository) DeleteBanner(ctx context.Context, appID string, id u
 // -----------------------------------------------------------------------------
 
 func (r *contentRepository) ListBlogCategories(ctx context.Context, filter entity.ListBlogCategoriesFilter) ([]*entity.ContentBlogCategory, int64, error) {
+	var activeFilter pgtype.Bool
+	if filter.IsActive != nil {
+		activeFilter = pgtype.Bool{Bool: *filter.IsActive, Valid: true}
+	}
 	var searchText pgtype.Text
 	if filter.Search != "" {
 		searchText = pgtype.Text{String: filter.Search, Valid: true}
 	}
 
 	total, err := r.queries.CountBlogCategories(ctx, sqlc.CountBlogCategoriesParams{
-		AppID:  filter.AppID,
-		Search: searchText,
+		AppID:    filter.AppID,
+		IsActive: activeFilter,
+		Search:   searchText,
 	})
 	if err != nil {
 		return nil, 0, fmt.Errorf("repository/count-blog-categories: %w", err)
 	}
 
 	rows, err := r.queries.ListBlogCategories(ctx, sqlc.ListBlogCategoriesParams{
-		AppID:  filter.AppID,
-		Search: searchText,
-		Limit:  filter.Limit,
-		Offset: filter.Offset,
+		AppID:    filter.AppID,
+		IsActive: activeFilter,
+		Search:   searchText,
+		Limit:    filter.Limit,
+		Offset:   filter.Offset,
 	})
 	if err != nil {
 		return nil, 0, fmt.Errorf("repository/list-blog-categories: %w", err)
@@ -233,7 +252,7 @@ func (r *contentRepository) UpdateBlogCategory(ctx context.Context, c *entity.Co
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, domainErrors.ErrBlogCategoryNotFound
 		}
-		return nil, fmt.Errorf("repository/update-blog-category: %w", err)
+		return nil, mapUniqueViolation(err)
 	}
 	return &entity.ContentBlogCategory{
 		ID:          row.ID,
@@ -373,6 +392,7 @@ func (r *contentRepository) ListBlogs(ctx context.Context, filter entity.ListBlo
 			Excerpt:         b.Excerpt,
 			Body:            b.Body,
 			ThumbnailURL:    b.ThumbnailUrl,
+			ThumbnailKey:    b.ThumbnailKey,
 			Tags:            b.Tags,
 			MetaTitle:       b.MetaTitle,
 			MetaDescription: b.MetaDescription,
@@ -413,6 +433,7 @@ func (r *contentRepository) GetBlogByID(ctx context.Context, appID string, id uu
 		Excerpt:         b.Excerpt,
 		Body:            b.Body,
 		ThumbnailURL:    b.ThumbnailUrl,
+		ThumbnailKey:    b.ThumbnailKey,
 		Tags:            b.Tags,
 		MetaTitle:       b.MetaTitle,
 		MetaDescription: b.MetaDescription,
@@ -450,6 +471,7 @@ func (r *contentRepository) GetBlogBySlug(ctx context.Context, appID, slug strin
 		Excerpt:         b.Excerpt,
 		Body:            b.Body,
 		ThumbnailURL:    b.ThumbnailUrl,
+		ThumbnailKey:    b.ThumbnailKey,
 		Tags:            b.Tags,
 		MetaTitle:       b.MetaTitle,
 		MetaDescription: b.MetaDescription,
@@ -482,6 +504,7 @@ func (r *contentRepository) CreateBlog(ctx context.Context, b *entity.ContentBlo
 		MetaDescription: b.MetaDescription,
 		Status:          b.Status,
 		IsFeatured:      b.IsFeatured,
+		ThumbnailKey:    b.ThumbnailKey,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("repository/create-blog: %w", err)
@@ -498,6 +521,7 @@ func (r *contentRepository) CreateBlog(ctx context.Context, b *entity.ContentBlo
 		Excerpt:         row.Excerpt,
 		Body:            row.Body,
 		ThumbnailURL:    row.ThumbnailUrl,
+		ThumbnailKey:    row.ThumbnailKey,
 		Tags:            row.Tags,
 		MetaTitle:       row.MetaTitle,
 		MetaDescription: row.MetaDescription,
@@ -525,6 +549,7 @@ func (r *contentRepository) UpdateBlog(ctx context.Context, b *entity.ContentBlo
 		MetaDescription: b.MetaDescription,
 		Status:          b.Status,
 		IsFeatured:      b.IsFeatured,
+		ThumbnailKey:    b.ThumbnailKey,
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -544,6 +569,7 @@ func (r *contentRepository) UpdateBlog(ctx context.Context, b *entity.ContentBlo
 		Excerpt:         row.Excerpt,
 		Body:            row.Body,
 		ThumbnailURL:    row.ThumbnailUrl,
+		ThumbnailKey:    row.ThumbnailKey,
 		Tags:            row.Tags,
 		MetaTitle:       row.MetaTitle,
 		MetaDescription: row.MetaDescription,
@@ -607,6 +633,7 @@ func (r *contentRepository) ListGalleries(ctx context.Context, filter entity.Lis
 			Description: g.Description,
 			Category:    g.Category,
 			CoverURL:    g.CoverUrl,
+			CoverKey:    g.CoverKey,
 			IsActive:    g.IsActive,
 			CreatedAt:   g.CreatedAt,
 			UpdatedAt:   g.UpdatedAt,
@@ -641,6 +668,7 @@ func (r *contentRepository) GetGalleryByID(ctx context.Context, appID string, id
 		Description: row.Description,
 		Category:    row.Category,
 		CoverURL:    row.CoverUrl,
+		CoverKey:    row.CoverKey,
 		IsActive:    row.IsActive,
 		Items:       items,
 		CreatedAt:   row.CreatedAt,
@@ -673,6 +701,7 @@ func (r *contentRepository) GetGalleryBySlug(ctx context.Context, appID, slug st
 		Description: row.Description,
 		Category:    row.Category,
 		CoverURL:    row.CoverUrl,
+		CoverKey:    row.CoverKey,
 		IsActive:    row.IsActive,
 		Items:       items,
 		CreatedAt:   row.CreatedAt,
@@ -689,6 +718,7 @@ func (r *contentRepository) CreateGallery(ctx context.Context, g *entity.Content
 		Category:    g.Category,
 		CoverUrl:    g.CoverURL,
 		IsActive:    g.IsActive,
+		CoverKey:    g.CoverKey,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("repository/create-gallery: %w", err)
@@ -702,6 +732,7 @@ func (r *contentRepository) CreateGallery(ctx context.Context, g *entity.Content
 		Description: row.Description,
 		Category:    row.Category,
 		CoverURL:    row.CoverUrl,
+		CoverKey:    row.CoverKey,
 		IsActive:    row.IsActive,
 		CreatedAt:   row.CreatedAt,
 		UpdatedAt:   row.UpdatedAt,
@@ -718,12 +749,13 @@ func (r *contentRepository) UpdateGallery(ctx context.Context, g *entity.Content
 		Category:    g.Category,
 		CoverUrl:    g.CoverURL,
 		IsActive:    g.IsActive,
+		CoverKey:    g.CoverKey,
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, domainErrors.ErrGalleryNotFound
 		}
-		return nil, fmt.Errorf("repository/update-gallery: %w", err)
+		return nil, mapUniqueViolation(err)
 	}
 
 	return &entity.ContentGallery{
@@ -734,6 +766,7 @@ func (r *contentRepository) UpdateGallery(ctx context.Context, g *entity.Content
 		Description: row.Description,
 		Category:    row.Category,
 		CoverURL:    row.CoverUrl,
+		CoverKey:    row.CoverKey,
 		IsActive:    row.IsActive,
 		CreatedAt:   row.CreatedAt,
 		UpdatedAt:   row.UpdatedAt,
@@ -772,6 +805,8 @@ func (r *contentRepository) ListGalleryItems(ctx context.Context, galleryID uuid
 			MediaType:     it.MediaType,
 			MediaURL:      it.MediaUrl,
 			ThumbnailURL:  it.ThumbnailUrl,
+			MediaKey:      it.MediaKey,
+			ThumbnailKey:  it.ThumbnailKey,
 			SequenceOrder: it.SequenceOrder,
 			IsActive:      it.IsActive,
 			CreatedAt:     it.CreatedAt,
@@ -792,6 +827,8 @@ func (r *contentRepository) AddGalleryItem(ctx context.Context, item *entity.Con
 		ThumbnailUrl:  item.ThumbnailURL,
 		SequenceOrder: item.SequenceOrder,
 		IsActive:      item.IsActive,
+		MediaKey:      item.MediaKey,
+		ThumbnailKey:  item.ThumbnailKey,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("repository/add-gallery-item: %w", err)
@@ -806,6 +843,8 @@ func (r *contentRepository) AddGalleryItem(ctx context.Context, item *entity.Con
 		MediaType:     row.MediaType,
 		MediaURL:      row.MediaUrl,
 		ThumbnailURL:  row.ThumbnailUrl,
+		MediaKey:      row.MediaKey,
+		ThumbnailKey:  row.ThumbnailKey,
 		SequenceOrder: row.SequenceOrder,
 		IsActive:      row.IsActive,
 		CreatedAt:     row.CreatedAt,
@@ -895,6 +934,7 @@ func (r *contentRepository) UpsertCustomBlock(ctx context.Context, b *entity.Con
 		Metadata:      metaJSON,
 		SequenceOrder: b.SequenceOrder,
 		IsActive:      b.IsActive,
+		ImageKey:      b.ImageKey,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("repository/upsert-custom-block: %w", err)
@@ -1071,6 +1111,7 @@ func (r *contentRepository) ListTestimonials(ctx context.Context, filter entity.
 			CustomerName:  t.CustomerName,
 			CustomerTitle: t.CustomerTitle,
 			AvatarURL:     t.AvatarUrl,
+			AvatarKey:     t.AvatarKey,
 			Rating:        t.Rating,
 			Comment:       t.Comment,
 			PackageName:   t.PackageName,
@@ -1095,6 +1136,7 @@ func (r *contentRepository) CreateTestimonial(ctx context.Context, t *entity.Con
 		PackageName:   t.PackageName,
 		IsFeatured:    t.IsFeatured,
 		IsActive:      t.IsActive,
+		AvatarKey:     t.AvatarKey,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("repository/create-testimonial: %w", err)
@@ -1106,6 +1148,7 @@ func (r *contentRepository) CreateTestimonial(ctx context.Context, t *entity.Con
 		CustomerName:  row.CustomerName,
 		CustomerTitle: row.CustomerTitle,
 		AvatarURL:     row.AvatarUrl,
+		AvatarKey:     row.AvatarKey,
 		Rating:        row.Rating,
 		Comment:       row.Comment,
 		PackageName:   row.PackageName,
@@ -1128,6 +1171,7 @@ func (r *contentRepository) UpdateTestimonial(ctx context.Context, t *entity.Con
 		PackageName:   t.PackageName,
 		IsFeatured:    t.IsFeatured,
 		IsActive:      t.IsActive,
+		AvatarKey:     t.AvatarKey,
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -1142,6 +1186,7 @@ func (r *contentRepository) UpdateTestimonial(ctx context.Context, t *entity.Con
 		CustomerName:  row.CustomerName,
 		CustomerTitle: row.CustomerTitle,
 		AvatarURL:     row.AvatarUrl,
+		AvatarKey:     row.AvatarKey,
 		Rating:        row.Rating,
 		Comment:       row.Comment,
 		PackageName:   row.PackageName,
@@ -1177,6 +1222,8 @@ func toDomainBanner(b *sqlc.ContentBanner) *entity.ContentBanner {
 		Description:    b.Description,
 		ImageURL:       b.ImageUrl,
 		MobileImageURL: b.MobileImageUrl,
+		ImageKey:       b.ImageKey,
+		MobileImageKey: b.MobileImageKey,
 		TargetURL:      b.TargetUrl,
 		ButtonText:     b.ButtonText,
 		Position:       b.Position,
@@ -1206,6 +1253,7 @@ func toDomainCustomBlock(b *sqlc.ContentCustomBlock) *entity.ContentCustomBlock 
 		Subtitle:      b.Subtitle,
 		Body:          b.Body,
 		ImageURL:      b.ImageUrl,
+		ImageKey:      b.ImageKey,
 		Metadata:      meta,
 		SequenceOrder: b.SequenceOrder,
 		IsActive:      b.IsActive,

@@ -36,15 +36,7 @@ func NewContentHandler(usecase content.ContentUsecase) *ContentHandler {
 func (h *ContentHandler) ListBanners(ctx context.Context, req *pb.ListBannersRequest) (*pb.ListBannersResponse, error) {
 	appID, _ := interceptor.ExtractAppID(ctx, req.GetAppId())
 
-	page := req.GetPage()
-	if page < 1 {
-		page = 1
-	}
-	perPage := req.GetPerPage()
-	if perPage < 1 || perPage > 100 {
-		perPage = 10
-	}
-	offset := (page - 1) * perPage
+	perPage, offset := entity.NormalizePageRequest(req.GetPage(), req.GetPerPage())
 
 	bannerFilter := entity.ListBannersFilter{
 		AppID:    appID,
@@ -91,6 +83,9 @@ func (h *ContentHandler) GetBanner(ctx context.Context, req *pb.GetBannerRequest
 	if err != nil {
 		return nil, mapDomainErrorToGRPC(err)
 	}
+	if !interceptor.IsAdmin(ctx) && !b.IsActive {
+		return nil, mapDomainErrorToGRPC(domainErrors.ErrBannerNotFound)
+	}
 
 	return &pb.BannerResponse{
 		Message: "Banner retrieved successfully",
@@ -130,6 +125,8 @@ func (h *ContentHandler) CreateBanner(ctx context.Context, req *pb.CreateBannerR
 		Description:    req.GetDescription(),
 		ImageURL:       req.GetImageUrl(),
 		MobileImageURL: req.GetMobileImageUrl(),
+		ImageKey:       req.GetImageKey(),
+		MobileImageKey: req.GetMobileImageKey(),
 		TargetURL:      req.GetTargetUrl(),
 		ButtonText:     req.GetButtonText(),
 		Position:       req.GetPosition(),
@@ -185,6 +182,8 @@ func (h *ContentHandler) UpdateBanner(ctx context.Context, req *pb.UpdateBannerR
 		Description:    req.GetDescription(),
 		ImageURL:       req.GetImageUrl(),
 		MobileImageURL: req.GetMobileImageUrl(),
+		ImageKey:       req.GetImageKey(),
+		MobileImageKey: req.GetMobileImageKey(),
 		TargetURL:      req.GetTargetUrl(),
 		ButtonText:     req.GetButtonText(),
 		Position:       req.GetPosition(),
@@ -230,14 +229,19 @@ func (h *ContentHandler) DeleteBanner(ctx context.Context, req *pb.DeleteBannerR
 func (h *ContentHandler) ListBlogCategories(ctx context.Context, req *pb.ListBlogCategoriesRequest) (*pb.ListBlogCategoriesResponse, error) {
 	appID, _ := interceptor.ExtractAppID(ctx, req.GetAppId())
 
-	perPage, offset := normalizePageRequest(req.GetPage(), req.GetPerPage())
+	perPage, offset := entity.NormalizePageRequest(req.GetPage(), req.GetPerPage())
 
-	categories, meta, err := h.usecase.ListBlogCategories(ctx, entity.ListBlogCategoriesFilter{
+	filter := entity.ListBlogCategoriesFilter{
 		AppID:  appID,
 		Search: req.GetSearch(),
 		Limit:  perPage,
 		Offset: offset,
-	})
+	}
+	if !interceptor.IsAdmin(ctx) {
+		active := true
+		filter.IsActive = &active
+	}
+	categories, meta, err := h.usecase.ListBlogCategories(ctx, filter)
 	if err != nil {
 		return nil, mapDomainErrorToGRPC(err)
 	}
@@ -312,11 +316,11 @@ func (h *ContentHandler) ListBlogs(ctx context.Context, req *pb.ListBlogsRequest
 		}
 	}
 
-	perPage, offset := normalizePageRequest(req.GetPage(), req.GetPerPage())
+	perPage, offset := entity.NormalizePageRequest(req.GetPage(), req.GetPerPage())
 
 	statusFilter := req.GetStatus()
 	if !interceptor.IsAdmin(ctx) {
-		statusFilter = "PUBLISHED"
+		statusFilter = entity.BlogStatusPublished
 	}
 
 	blogs, meta, err := h.usecase.ListBlogs(ctx, entity.ListBlogsFilter{
@@ -362,7 +366,7 @@ func (h *ContentHandler) GetBlog(ctx context.Context, req *pb.GetBlogRequest) (*
 	if err != nil {
 		return nil, mapDomainErrorToGRPC(err)
 	}
-	if !interceptor.IsAdmin(ctx) && b.Status != "PUBLISHED" {
+	if !interceptor.IsAdmin(ctx) && b.Status != entity.BlogStatusPublished {
 		return nil, mapDomainErrorToGRPC(domainErrors.ErrBlogNotFound)
 	}
 
@@ -399,6 +403,7 @@ func (h *ContentHandler) CreateBlog(ctx context.Context, req *pb.CreateBlogReque
 		Excerpt:         req.GetExcerpt(),
 		Body:            req.GetBody(),
 		ThumbnailURL:    req.GetThumbnailUrl(),
+		ThumbnailKey:    req.GetThumbnailKey(),
 		Tags:            req.GetTags(),
 		MetaTitle:       req.GetMetaTitle(),
 		MetaDescription: req.GetMetaDescription(),
@@ -442,6 +447,7 @@ func (h *ContentHandler) UpdateBlog(ctx context.Context, req *pb.UpdateBlogReque
 		Excerpt:         req.GetExcerpt(),
 		Body:            req.GetBody(),
 		ThumbnailURL:    req.GetThumbnailUrl(),
+		ThumbnailKey:    req.GetThumbnailKey(),
 		Tags:            req.GetTags(),
 		MetaTitle:       req.GetMetaTitle(),
 		MetaDescription: req.GetMetaDescription(),
@@ -484,7 +490,7 @@ func (h *ContentHandler) DeleteBlog(ctx context.Context, req *pb.DeleteBlogReque
 func (h *ContentHandler) ListGalleries(ctx context.Context, req *pb.ListGalleriesRequest) (*pb.ListGalleriesResponse, error) {
 	appID, _ := interceptor.ExtractAppID(ctx, req.GetAppId())
 
-	perPage, offset := normalizePageRequest(req.GetPage(), req.GetPerPage())
+	perPage, offset := entity.NormalizePageRequest(req.GetPage(), req.GetPerPage())
 
 	filter := entity.ListGalleriesFilter{
 		AppID:    appID,
@@ -535,6 +541,7 @@ func (h *ContentHandler) UpdateGallery(ctx context.Context, req *pb.UpdateGaller
 		Description: req.GetDescription(),
 		Category:    req.GetCategory(),
 		CoverURL:    req.GetCoverUrl(),
+		CoverKey:    req.GetCoverKey(),
 		IsActive:    req.GetIsActive(),
 	})
 	if err != nil {
@@ -581,6 +588,7 @@ func (h *ContentHandler) CreateGallery(ctx context.Context, req *pb.CreateGaller
 		Description: req.GetDescription(),
 		Category:    req.GetCategory(),
 		CoverURL:    req.GetCoverUrl(),
+		CoverKey:    req.GetCoverKey(),
 		IsActive:    true,
 	}
 
@@ -628,6 +636,8 @@ func (h *ContentHandler) AddGalleryItem(ctx context.Context, req *pb.AddGalleryI
 		MediaType:     req.GetMediaType(),
 		MediaURL:      req.GetMediaUrl(),
 		ThumbnailURL:  req.GetThumbnailUrl(),
+		MediaKey:      req.GetMediaKey(),
+		ThumbnailKey:  req.GetThumbnailKey(),
 		SequenceOrder: req.GetSequenceOrder(),
 		IsActive:      true,
 	}
@@ -667,7 +677,7 @@ func (h *ContentHandler) DeleteGalleryItem(ctx context.Context, req *pb.DeleteGa
 func (h *ContentHandler) ListCustomBlocks(ctx context.Context, req *pb.ListCustomBlocksRequest) (*pb.ListCustomBlocksResponse, error) {
 	appID, _ := interceptor.ExtractAppID(ctx, req.GetAppId())
 
-	perPage, offset := normalizePageRequest(req.GetPage(), req.GetPerPage())
+	perPage, offset := entity.NormalizePageRequest(req.GetPage(), req.GetPerPage())
 
 	filter := entity.ListCustomBlocksFilter{
 		AppID:       appID,
@@ -731,6 +741,7 @@ func (h *ContentHandler) UpsertCustomBlock(ctx context.Context, req *pb.UpsertCu
 		Subtitle:      req.GetSubtitle(),
 		Body:          req.GetBody(),
 		ImageURL:      req.GetImageUrl(),
+		ImageKey:      req.GetImageKey(),
 		Metadata:      metadata,
 		SequenceOrder: req.GetSequenceOrder(),
 		IsActive:      req.GetIsActive(),
@@ -767,7 +778,7 @@ func (h *ContentHandler) DeleteCustomBlock(ctx context.Context, req *pb.DeleteCu
 func (h *ContentHandler) ListFAQs(ctx context.Context, req *pb.ListFAQsRequest) (*pb.ListFAQsResponse, error) {
 	appID, _ := interceptor.ExtractAppID(ctx, req.GetAppId())
 
-	perPage, offset := normalizePageRequest(req.GetPage(), req.GetPerPage())
+	perPage, offset := entity.NormalizePageRequest(req.GetPage(), req.GetPerPage())
 
 	filter := entity.ListFAQsFilter{
 		AppID:    appID,
@@ -870,15 +881,7 @@ func (h *ContentHandler) DeleteFAQ(ctx context.Context, req *pb.DeleteFAQRequest
 func (h *ContentHandler) ListTestimonials(ctx context.Context, req *pb.ListTestimonialsRequest) (*pb.ListTestimonialsResponse, error) {
 	appID, _ := interceptor.ExtractAppID(ctx, req.GetAppId())
 
-	page := req.GetPage()
-	if page < 1 {
-		page = 1
-	}
-	perPage := req.GetPerPage()
-	if perPage < 1 || perPage > 100 {
-		perPage = 10
-	}
-	offset := (page - 1) * perPage
+	perPage, offset := entity.NormalizePageRequest(req.GetPage(), req.GetPerPage())
 
 	testimonialFilter := entity.ListTestimonialsFilter{
 		AppID:  appID,
@@ -920,6 +923,7 @@ func (h *ContentHandler) CreateTestimonial(ctx context.Context, req *pb.CreateTe
 		CustomerName:  req.GetCustomerName(),
 		CustomerTitle: req.GetCustomerTitle(),
 		AvatarURL:     req.GetAvatarUrl(),
+		AvatarKey:     req.GetAvatarKey(),
 		Rating:        req.GetRating(),
 		Comment:       req.GetComment(),
 		PackageName:   req.GetPackageName(),
@@ -952,6 +956,7 @@ func (h *ContentHandler) UpdateTestimonial(ctx context.Context, req *pb.UpdateTe
 		CustomerName:  req.GetCustomerName(),
 		CustomerTitle: req.GetCustomerTitle(),
 		AvatarURL:     req.GetAvatarUrl(),
+		AvatarKey:     req.GetAvatarKey(),
 		Rating:        req.GetRating(),
 		Comment:       req.GetComment(),
 		PackageName:   req.GetPackageName(),
@@ -1063,6 +1068,8 @@ func toProtoBanner(b *entity.ContentBanner) *pb.BannerData {
 		Description:    b.Description,
 		ImageUrl:       b.ImageURL,
 		MobileImageUrl: b.MobileImageURL,
+		ImageKey:       b.ImageKey,
+		MobileImageKey: b.MobileImageKey,
 		TargetUrl:      b.TargetURL,
 		ButtonText:     b.ButtonText,
 		Position:       b.Position,
@@ -1074,17 +1081,6 @@ func toProtoBanner(b *entity.ContentBanner) *pb.BannerData {
 		CreatedAt:      b.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:      b.UpdatedAt.Format(time.RFC3339),
 	}
-}
-
-// normalizePageRequest returns the per-page size and offset for a 1-based page request.
-func normalizePageRequest(page, perPage int32) (int32, int32) {
-	if page < 1 {
-		page = 1
-	}
-	if perPage < 1 || perPage > 100 {
-		perPage = 10
-	}
-	return perPage, (page - 1) * perPage
 }
 
 // toProtoPagination converts usecase pagination metadata to its protobuf form.
@@ -1137,6 +1133,7 @@ func toProtoBlog(b *entity.ContentBlog) *pb.BlogData {
 		Excerpt:         b.Excerpt,
 		Body:            b.Body,
 		ThumbnailUrl:    b.ThumbnailURL,
+		ThumbnailKey:    b.ThumbnailKey,
 		Tags:            b.Tags,
 		MetaTitle:       b.MetaTitle,
 		MetaDescription: b.MetaDescription,
@@ -1162,6 +1159,8 @@ func toProtoGalleryItem(i *entity.ContentGalleryItem) *pb.GalleryItemData {
 		MediaType:     i.MediaType,
 		MediaUrl:      i.MediaURL,
 		ThumbnailUrl:  i.ThumbnailURL,
+		MediaKey:      i.MediaKey,
+		ThumbnailKey:  i.ThumbnailKey,
 		SequenceOrder: i.SequenceOrder,
 		IsActive:      i.IsActive,
 	}
@@ -1184,6 +1183,7 @@ func toProtoGallery(g *entity.ContentGallery) *pb.GalleryData {
 		Description: g.Description,
 		Category:    g.Category,
 		CoverUrl:    g.CoverURL,
+		CoverKey:    g.CoverKey,
 		IsActive:    g.IsActive,
 		Items:       protoItems,
 		CreatedAt:   g.CreatedAt.Format(time.RFC3339),
@@ -1209,6 +1209,7 @@ func toProtoCustomBlock(b *entity.ContentCustomBlock) *pb.CustomBlockData {
 		Subtitle:      b.Subtitle,
 		Body:          b.Body,
 		ImageUrl:      b.ImageURL,
+		ImageKey:      b.ImageKey,
 		Metadata:      metaStr,
 		SequenceOrder: b.SequenceOrder,
 		IsActive:      b.IsActive,
@@ -1240,6 +1241,7 @@ func toProtoTestimonial(t *entity.ContentTestimonial) *pb.TestimonialData {
 		CustomerName:  t.CustomerName,
 		CustomerTitle: t.CustomerTitle,
 		AvatarUrl:     t.AvatarURL,
+		AvatarKey:     t.AvatarKey,
 		Rating:        t.Rating,
 		Comment:       t.Comment,
 		PackageName:   t.PackageName,

@@ -30,6 +30,8 @@ type ContentBanner struct {
 	CreatedBy      pgtype.UUID        `db:"created_by" json:"created_by"`
 	CreatedAt      time.Time          `db:"created_at" json:"created_at"`
 	UpdatedAt      time.Time          `db:"updated_at" json:"updated_at"`
+	ImageKey       string             `db:"image_key" json:"image_key"`
+	MobileImageKey string             `db:"mobile_image_key" json:"mobile_image_key"`
 }
 
 type ContentBlog struct {
@@ -52,6 +54,7 @@ type ContentBlog struct {
 	PublishedAt     pgtype.Timestamptz `db:"published_at" json:"published_at"`
 	CreatedAt       time.Time          `db:"created_at" json:"created_at"`
 	UpdatedAt       time.Time          `db:"updated_at" json:"updated_at"`
+	ThumbnailKey    string             `db:"thumbnail_key" json:"thumbnail_key"`
 }
 
 type ContentBlogCategory struct {
@@ -79,6 +82,7 @@ type ContentCustomBlock struct {
 	IsActive      bool      `db:"is_active" json:"is_active"`
 	CreatedAt     time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt     time.Time `db:"updated_at" json:"updated_at"`
+	ImageKey      string    `db:"image_key" json:"image_key"`
 }
 
 type ContentFaq struct {
@@ -104,6 +108,7 @@ type ContentGallery struct {
 	IsActive    bool      `db:"is_active" json:"is_active"`
 	CreatedAt   time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
+	CoverKey    string    `db:"cover_key" json:"cover_key"`
 }
 
 type ContentGalleryItem struct {
@@ -119,6 +124,8 @@ type ContentGalleryItem struct {
 	IsActive      bool      `db:"is_active" json:"is_active"`
 	CreatedAt     time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt     time.Time `db:"updated_at" json:"updated_at"`
+	MediaKey      string    `db:"media_key" json:"media_key"`
+	ThumbnailKey  string    `db:"thumbnail_key" json:"thumbnail_key"`
 }
 
 type ContentTestimonial struct {
@@ -134,4 +141,5 @@ type ContentTestimonial struct {
 	IsActive      bool      `db:"is_active" json:"is_active"`
 	CreatedAt     time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt     time.Time `db:"updated_at" json:"updated_at"`
+	AvatarKey     string    `db:"avatar_key" json:"avatar_key"`
 }

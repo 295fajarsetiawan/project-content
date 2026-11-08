@@ -97,6 +97,51 @@ func TestAuthInterceptor_SuperAdminCanActAcrossApps(t *testing.T) {
 	}
 }
 
+func TestAuthInterceptor_AdminPublicReadIsTenantScoped(t *testing.T) {
+	admin := makeToken(t, "admin", "tenant-a")
+	publicMethod := "/content.v1.ContentService/ListBlogs"
+
+	t.Run("rejects request app spoof", func(t *testing.T) {
+		err := invoke(t, admin, appReq{AppID: "tenant-b"}, publicMethod)
+		if status.Code(err) != codes.PermissionDenied {
+			t.Fatalf("cross-app read code = %v, want PermissionDenied", status.Code(err))
+		}
+	})
+
+	t.Run("rejects conflicting tenant metadata even if request matches", func(t *testing.T) {
+		ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs(
+			"authorization", admin,
+			"x-app-id", "tenant-b",
+		))
+		ic := AuthInterceptor(security.NewJWTValidator(testSecret))
+		info := &grpc.UnaryServerInfo{FullMethod: publicMethod}
+		_, err := ic(ctx, appReq{AppID: "tenant-a"}, info, func(context.Context, interface{}) (interface{}, error) {
+			return nil, nil
+		})
+		if status.Code(err) != codes.PermissionDenied {
+			t.Fatalf("conflicting metadata code = %v, want PermissionDenied", status.Code(err))
+		}
+	})
+
+	t.Run("uses token app when request omits app", func(t *testing.T) {
+		ic := AuthInterceptor(security.NewJWTValidator(testSecret))
+		ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs("authorization", admin))
+		info := &grpc.UnaryServerInfo{FullMethod: publicMethod}
+		called := false
+		_, err := ic(ctx, appReq{}, info, func(ctx context.Context, req interface{}) (interface{}, error) {
+			called = true
+			appID, _ := ExtractAppID(ctx, "")
+			if appID != "tenant-a" {
+				t.Fatalf("context app_id = %q, want token tenant-a", appID)
+			}
+			return nil, nil
+		})
+		if err != nil || !called {
+			t.Fatalf("same-tenant public read failed: called=%v err=%v", called, err)
+		}
+	})
+}
+
 func TestAuthInterceptor_AdminCannotSpoofAppViaHeader(t *testing.T) {
 	admin := makeToken(t, "admin", "umroh")
 	ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs(

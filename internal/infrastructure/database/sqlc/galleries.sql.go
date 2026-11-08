@@ -14,11 +14,11 @@ import (
 
 const addGalleryItem = `-- name: AddGalleryItem :one
 INSERT INTO content_gallery_items (
-    app_id, gallery_id, title, caption, media_type, media_url, thumbnail_url, sequence_order, is_active
+    app_id, gallery_id, title, caption, media_type, media_url, thumbnail_url, sequence_order, is_active, media_key, thumbnail_key
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
 )
-RETURNING id, app_id, gallery_id, title, caption, media_type, media_url, thumbnail_url, sequence_order, is_active, created_at, updated_at
+RETURNING id, app_id, gallery_id, title, caption, media_type, media_url, thumbnail_url, sequence_order, is_active, created_at, updated_at, media_key, thumbnail_key
 `
 
 type AddGalleryItemParams struct {
@@ -31,6 +31,8 @@ type AddGalleryItemParams struct {
 	ThumbnailUrl  string    `db:"thumbnail_url" json:"thumbnail_url"`
 	SequenceOrder int32     `db:"sequence_order" json:"sequence_order"`
 	IsActive      bool      `db:"is_active" json:"is_active"`
+	MediaKey      string    `db:"media_key" json:"media_key"`
+	ThumbnailKey  string    `db:"thumbnail_key" json:"thumbnail_key"`
 }
 
 func (q *Queries) AddGalleryItem(ctx context.Context, arg AddGalleryItemParams) (ContentGalleryItem, error) {
@@ -44,6 +46,8 @@ func (q *Queries) AddGalleryItem(ctx context.Context, arg AddGalleryItemParams) 
 		arg.ThumbnailUrl,
 		arg.SequenceOrder,
 		arg.IsActive,
+		arg.MediaKey,
+		arg.ThumbnailKey,
 	)
 	var i ContentGalleryItem
 	err := row.Scan(
@@ -59,6 +63,8 @@ func (q *Queries) AddGalleryItem(ctx context.Context, arg AddGalleryItemParams) 
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.MediaKey,
+		&i.ThumbnailKey,
 	)
 	return i, err
 }
@@ -86,11 +92,11 @@ func (q *Queries) CountGalleries(ctx context.Context, arg CountGalleriesParams) 
 
 const createGallery = `-- name: CreateGallery :one
 INSERT INTO content_galleries (
-    app_id, title, slug, description, category, cover_url, is_active
+    app_id, title, slug, description, category, cover_url, is_active, cover_key
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7
+    $1, $2, $3, $4, $5, $6, $7, $8
 )
-RETURNING id, app_id, title, slug, description, category, cover_url, is_active, created_at, updated_at
+RETURNING id, app_id, title, slug, description, category, cover_url, is_active, created_at, updated_at, cover_key
 `
 
 type CreateGalleryParams struct {
@@ -101,6 +107,7 @@ type CreateGalleryParams struct {
 	Category    string `db:"category" json:"category"`
 	CoverUrl    string `db:"cover_url" json:"cover_url"`
 	IsActive    bool   `db:"is_active" json:"is_active"`
+	CoverKey    string `db:"cover_key" json:"cover_key"`
 }
 
 func (q *Queries) CreateGallery(ctx context.Context, arg CreateGalleryParams) (ContentGallery, error) {
@@ -112,6 +119,7 @@ func (q *Queries) CreateGallery(ctx context.Context, arg CreateGalleryParams) (C
 		arg.Category,
 		arg.CoverUrl,
 		arg.IsActive,
+		arg.CoverKey,
 	)
 	var i ContentGallery
 	err := row.Scan(
@@ -125,6 +133,7 @@ func (q *Queries) CreateGallery(ctx context.Context, arg CreateGalleryParams) (C
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CoverKey,
 	)
 	return i, err
 }
@@ -160,7 +169,7 @@ func (q *Queries) DeleteGalleryItem(ctx context.Context, arg DeleteGalleryItemPa
 }
 
 const getGalleryByID = `-- name: GetGalleryByID :one
-SELECT id, app_id, title, slug, description, category, cover_url, is_active, created_at, updated_at
+SELECT id, app_id, title, slug, description, category, cover_url, is_active, created_at, updated_at, cover_key
 FROM content_galleries
 WHERE id = $1 AND app_id = $2
 `
@@ -184,12 +193,13 @@ func (q *Queries) GetGalleryByID(ctx context.Context, arg GetGalleryByIDParams) 
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CoverKey,
 	)
 	return i, err
 }
 
 const getGalleryBySlug = `-- name: GetGalleryBySlug :one
-SELECT id, app_id, title, slug, description, category, cover_url, is_active, created_at, updated_at
+SELECT id, app_id, title, slug, description, category, cover_url, is_active, created_at, updated_at, cover_key
 FROM content_galleries
 WHERE app_id = $1 AND slug = $2
 `
@@ -213,13 +223,14 @@ func (q *Queries) GetGalleryBySlug(ctx context.Context, arg GetGalleryBySlugPara
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CoverKey,
 	)
 	return i, err
 }
 
 const listGalleries = `-- name: ListGalleries :many
 
-SELECT id, app_id, title, slug, description, category, cover_url, is_active, created_at, updated_at
+SELECT id, app_id, title, slug, description, category, cover_url, is_active, created_at, updated_at, cover_key
 FROM content_galleries
 WHERE app_id = $1
   AND ($2::text IS NULL OR $2::text = '' OR category = $2)
@@ -263,6 +274,7 @@ func (q *Queries) ListGalleries(ctx context.Context, arg ListGalleriesParams) ([
 			&i.IsActive,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.CoverKey,
 		); err != nil {
 			return nil, err
 		}
@@ -276,7 +288,7 @@ func (q *Queries) ListGalleries(ctx context.Context, arg ListGalleriesParams) ([
 
 const listGalleryItems = `-- name: ListGalleryItems :many
 
-SELECT id, app_id, gallery_id, title, caption, media_type, media_url, thumbnail_url, sequence_order, is_active, created_at, updated_at
+SELECT id, app_id, gallery_id, title, caption, media_type, media_url, thumbnail_url, sequence_order, is_active, created_at, updated_at, media_key, thumbnail_key
 FROM content_gallery_items
 WHERE gallery_id = $1
   AND ($2::boolean IS NULL OR is_active = $2)
@@ -311,6 +323,8 @@ func (q *Queries) ListGalleryItems(ctx context.Context, arg ListGalleryItemsPara
 			&i.IsActive,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.MediaKey,
+			&i.ThumbnailKey,
 		); err != nil {
 			return nil, err
 		}
@@ -331,9 +345,10 @@ SET
     category = $6,
     cover_url = $7,
     is_active = $8,
+    cover_key = $9,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1 AND app_id = $2
-RETURNING id, app_id, title, slug, description, category, cover_url, is_active, created_at, updated_at
+RETURNING id, app_id, title, slug, description, category, cover_url, is_active, created_at, updated_at, cover_key
 `
 
 type UpdateGalleryParams struct {
@@ -345,6 +360,7 @@ type UpdateGalleryParams struct {
 	Category    string    `db:"category" json:"category"`
 	CoverUrl    string    `db:"cover_url" json:"cover_url"`
 	IsActive    bool      `db:"is_active" json:"is_active"`
+	CoverKey    string    `db:"cover_key" json:"cover_key"`
 }
 
 func (q *Queries) UpdateGallery(ctx context.Context, arg UpdateGalleryParams) (ContentGallery, error) {
@@ -357,6 +373,7 @@ func (q *Queries) UpdateGallery(ctx context.Context, arg UpdateGalleryParams) (C
 		arg.Category,
 		arg.CoverUrl,
 		arg.IsActive,
+		arg.CoverKey,
 	)
 	var i ContentGallery
 	err := row.Scan(
@@ -370,6 +387,7 @@ func (q *Queries) UpdateGallery(ctx context.Context, arg UpdateGalleryParams) (C
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CoverKey,
 	)
 	return i, err
 }
