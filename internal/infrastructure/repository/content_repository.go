@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -20,6 +21,14 @@ import (
 type contentRepository struct {
 	pool    *pgxpool.Pool
 	queries *sqlc.Queries
+}
+
+func mapUniqueViolation(err error) error {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+		return domainErrors.ErrDuplicateSlug
+	}
+	return fmt.Errorf("repository/content-update: %w", err)
 }
 
 func NewContentRepository(pool *pgxpool.Pool) entity.ContentRepository {
@@ -181,24 +190,30 @@ func (r *contentRepository) DeleteBanner(ctx context.Context, appID string, id u
 // -----------------------------------------------------------------------------
 
 func (r *contentRepository) ListBlogCategories(ctx context.Context, filter entity.ListBlogCategoriesFilter) ([]*entity.ContentBlogCategory, int64, error) {
+	var activeFilter pgtype.Bool
+	if filter.IsActive != nil {
+		activeFilter = pgtype.Bool{Bool: *filter.IsActive, Valid: true}
+	}
 	var searchText pgtype.Text
 	if filter.Search != "" {
 		searchText = pgtype.Text{String: filter.Search, Valid: true}
 	}
 
 	total, err := r.queries.CountBlogCategories(ctx, sqlc.CountBlogCategoriesParams{
-		AppID:  filter.AppID,
-		Search: searchText,
+		AppID:    filter.AppID,
+		IsActive: activeFilter,
+		Search:   searchText,
 	})
 	if err != nil {
 		return nil, 0, fmt.Errorf("repository/count-blog-categories: %w", err)
 	}
 
 	rows, err := r.queries.ListBlogCategories(ctx, sqlc.ListBlogCategoriesParams{
-		AppID:  filter.AppID,
-		Search: searchText,
-		Limit:  filter.Limit,
-		Offset: filter.Offset,
+		AppID:    filter.AppID,
+		IsActive: activeFilter,
+		Search:   searchText,
+		Limit:    filter.Limit,
+		Offset:   filter.Offset,
 	})
 	if err != nil {
 		return nil, 0, fmt.Errorf("repository/list-blog-categories: %w", err)
@@ -233,7 +248,7 @@ func (r *contentRepository) UpdateBlogCategory(ctx context.Context, c *entity.Co
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, domainErrors.ErrBlogCategoryNotFound
 		}
-		return nil, fmt.Errorf("repository/update-blog-category: %w", err)
+		return nil, mapUniqueViolation(err)
 	}
 	return &entity.ContentBlogCategory{
 		ID:          row.ID,
@@ -723,7 +738,7 @@ func (r *contentRepository) UpdateGallery(ctx context.Context, g *entity.Content
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, domainErrors.ErrGalleryNotFound
 		}
-		return nil, fmt.Errorf("repository/update-gallery: %w", err)
+		return nil, mapUniqueViolation(err)
 	}
 
 	return &entity.ContentGallery{

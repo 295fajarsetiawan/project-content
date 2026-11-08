@@ -103,6 +103,20 @@ func AuthInterceptor(jwtValidator *security.JWTValidator) grpc.UnaryServerInterc
 					appID = u.AppID
 					ctx = context.WithValue(ctx, appIDContextKey, appID)
 				}
+
+				// Public reads may expose drafts to admins, so tenant-scope their
+				// app context just like protected admin mutations.
+				if publicMethods[info.FullMethod] && isAdminRole(userCtx) && !isSuperAdmin(userCtx) {
+					requestedAppID := requestedAppID(req, md)
+					metadataAppID := requestedMetadataAppID(md)
+					if userCtx.AppID == "" ||
+						(requestedAppID != "" && requestedAppID != userCtx.AppID) ||
+						(metadataAppID != "" && metadataAppID != userCtx.AppID) {
+						return nil, status.Error(codes.PermissionDenied, "app_id does not match token scope")
+					}
+					appID = userCtx.AppID
+					ctx = context.WithValue(ctx, appIDContextKey, appID)
+				}
 			}
 		}
 
@@ -151,6 +165,22 @@ func isAdminRole(u *security.UserContext) bool {
 
 func isSuperAdmin(u *security.UserContext) bool {
 	return u != nil && strings.ToLower(strings.TrimSpace(u.Role)) == "superadmin"
+}
+
+func requestedAppID(req interface{}, md metadata.MD) string {
+	if getter, ok := req.(appIDGetter); ok && strings.TrimSpace(getter.GetAppId()) != "" {
+		return strings.TrimSpace(getter.GetAppId())
+	}
+	return requestedMetadataAppID(md)
+}
+
+func requestedMetadataAppID(md metadata.MD) string {
+	for _, key := range []string{"x-app-id", "app-id"} {
+		if values := md.Get(key); len(values) > 0 && strings.TrimSpace(values[0]) != "" {
+			return strings.TrimSpace(values[0])
+		}
+	}
+	return ""
 }
 
 func ExtractAppID(ctx context.Context, explicitAppID string) (string, error) {

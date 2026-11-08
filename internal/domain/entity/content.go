@@ -15,6 +15,31 @@ type PaginationMeta struct {
 	TotalPages  int32 `json:"total_pages"`
 }
 
+// NormalizePage returns a bounded page size and non-negative row offset.
+func NormalizePage(limit, offset int32) (int32, int32) {
+	if limit < 1 || limit > 100 {
+		limit = 10
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	return limit, offset
+}
+
+// NormalizePageRequest converts a 1-based page request into a bounded limit and offset.
+func NormalizePageRequest(page, perPage int32) (int32, int32) {
+	if page < 1 {
+		page = 1
+	}
+	limit, _ := NormalizePage(perPage, 0)
+	offset := (int64(page) - 1) * int64(limit)
+	maxOffset := int64(1<<31 - 1 - (1<<31-1)%limit)
+	if offset > maxOffset {
+		offset = maxOffset
+	}
+	return limit, int32(offset)
+}
+
 // -----------------------------------------------------------------------------
 // 1. Content Banner
 // -----------------------------------------------------------------------------
@@ -41,11 +66,18 @@ type ContentBanner struct {
 }
 
 type ListBlogCategoriesFilter struct {
-	AppID  string
-	Search string
-	Limit  int32
-	Offset int32
+	AppID    string
+	Search   string
+	IsActive *bool
+	Limit    int32
+	Offset   int32
 }
+
+const (
+	BlogStatusDraft     = "DRAFT"
+	BlogStatusPublished = "PUBLISHED"
+	BlogStatusArchived  = "ARCHIVED"
+)
 
 type ListCustomBlocksFilter struct {
 	AppID       string

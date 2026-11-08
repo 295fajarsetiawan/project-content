@@ -17,16 +17,18 @@ const countBlogCategories = `-- name: CountBlogCategories :one
 SELECT COUNT(*)
 FROM content_blog_categories
 WHERE app_id = $1
-  AND ($2::text IS NULL OR $2::text = '' OR name ILIKE '%' || $2 || '%' OR description ILIKE '%' || $2 || '%')
+  AND ($2::boolean IS NULL OR is_active = $2)
+  AND ($3::text IS NULL OR $3::text = '' OR name ILIKE '%' || $3 || '%' OR description ILIKE '%' || $3 || '%')
 `
 
 type CountBlogCategoriesParams struct {
-	AppID  string      `db:"app_id" json:"app_id"`
-	Search pgtype.Text `db:"search" json:"search"`
+	AppID    string      `db:"app_id" json:"app_id"`
+	IsActive pgtype.Bool `db:"is_active" json:"is_active"`
+	Search   pgtype.Text `db:"search" json:"search"`
 }
 
 func (q *Queries) CountBlogCategories(ctx context.Context, arg CountBlogCategoriesParams) (int64, error) {
-	row := q.db.QueryRow(ctx, countBlogCategories, arg.AppID, arg.Search)
+	row := q.db.QueryRow(ctx, countBlogCategories, arg.AppID, arg.IsActive, arg.Search)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -401,22 +403,25 @@ const listBlogCategories = `-- name: ListBlogCategories :many
 SELECT id, app_id, name, slug, description, is_active, created_at, updated_at
 FROM content_blog_categories
 WHERE app_id = $1
-  AND ($2::text IS NULL OR $2::text = '' OR name ILIKE '%' || $2 || '%' OR description ILIKE '%' || $2 || '%')
+  AND ($2::boolean IS NULL OR is_active = $2)
+  AND ($3::text IS NULL OR $3::text = '' OR name ILIKE '%' || $3 || '%' OR description ILIKE '%' || $3 || '%')
 ORDER BY name ASC
-LIMIT $4 OFFSET $3
+LIMIT $5 OFFSET $4
 `
 
 type ListBlogCategoriesParams struct {
-	AppID  string      `db:"app_id" json:"app_id"`
-	Search pgtype.Text `db:"search" json:"search"`
-	Offset int32       `db:"offset" json:"offset"`
-	Limit  int32       `db:"limit" json:"limit"`
+	AppID    string      `db:"app_id" json:"app_id"`
+	IsActive pgtype.Bool `db:"is_active" json:"is_active"`
+	Search   pgtype.Text `db:"search" json:"search"`
+	Offset   int32       `db:"offset" json:"offset"`
+	Limit    int32       `db:"limit" json:"limit"`
 }
 
 // Blog Categories
 func (q *Queries) ListBlogCategories(ctx context.Context, arg ListBlogCategoriesParams) ([]ContentBlogCategory, error) {
 	rows, err := q.db.Query(ctx, listBlogCategories,
 		arg.AppID,
+		arg.IsActive,
 		arg.Search,
 		arg.Offset,
 		arg.Limit,

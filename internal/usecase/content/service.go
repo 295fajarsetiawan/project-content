@@ -64,19 +64,9 @@ type ContentUsecase interface {
 	UploadMedia(ctx context.Context, appID, folder, filename, base64Content string) (*storage.MediaUploadResult, error)
 }
 
-// normalizePage clamps limit to 1..100 (default 10) and offset to >= 0.
-func normalizePage(limit, offset int32) (int32, int32) {
-	if limit < 1 || limit > 100 {
-		limit = 10
-	}
-	if offset < 0 {
-		offset = 0
-	}
-	return limit, offset
-}
-
 // buildPaginationMeta computes pagination metadata for a list response.
 func buildPaginationMeta(offset, limit int32, total int64) *entity.PaginationMeta {
+	limit, offset = entity.NormalizePage(limit, offset)
 	page := (offset / limit) + 1
 	totalPages := int32(math.Ceil(float64(total) / float64(limit)))
 	if totalPages == 0 && total > 0 {
@@ -110,14 +100,7 @@ func (u *contentUsecase) ListBanners(ctx context.Context, filter entity.ListBann
 	if filter.AppID == "" {
 		filter.AppID = "umroh"
 	}
-	limit := filter.Limit
-	if limit < 1 || limit > 100 {
-		limit = 10
-	}
-	offset := filter.Offset
-	if offset < 0 {
-		offset = 0
-	}
+	limit, offset := entity.NormalizePage(filter.Limit, filter.Offset)
 	filter.Limit = limit
 	filter.Offset = offset
 
@@ -126,20 +109,7 @@ func (u *contentUsecase) ListBanners(ctx context.Context, filter entity.ListBann
 		return nil, nil, err
 	}
 
-	page := (offset / limit) + 1
-	totalPages := int32(math.Ceil(float64(total) / float64(limit)))
-	if totalPages == 0 && total > 0 {
-		totalPages = 1
-	}
-
-	meta := &entity.PaginationMeta{
-		CurrentPage: page,
-		PerPage:     limit,
-		TotalItems:  total,
-		TotalPages:  totalPages,
-	}
-
-	return banners, meta, nil
+	return banners, buildPaginationMeta(offset, limit, total), nil
 }
 
 func (u *contentUsecase) GetBanner(ctx context.Context, appID string, id uuid.UUID) (*entity.ContentBanner, error) {
@@ -201,7 +171,7 @@ func (u *contentUsecase) ListBlogCategories(ctx context.Context, filter entity.L
 	if filter.AppID == "" {
 		filter.AppID = "umroh"
 	}
-	limit, offset := normalizePage(filter.Limit, filter.Offset)
+	limit, offset := entity.NormalizePage(filter.Limit, filter.Offset)
 	filter.Limit = limit
 	filter.Offset = offset
 
@@ -248,7 +218,7 @@ func (u *contentUsecase) ListBlogs(ctx context.Context, filter entity.ListBlogsF
 	if filter.AppID == "" {
 		filter.AppID = "umroh"
 	}
-	limit, offset := normalizePage(filter.Limit, filter.Offset)
+	limit, offset := entity.NormalizePage(filter.Limit, filter.Offset)
 	filter.Limit = limit
 	filter.Offset = offset
 
@@ -300,10 +270,10 @@ func (u *contentUsecase) CreateBlog(ctx context.Context, b *entity.ContentBlog) 
 	}
 	b.Slug = strings.ToLower(strings.TrimSpace(b.Slug))
 	if b.Status == "" {
-		b.Status = "PUBLISHED"
+		b.Status = entity.BlogStatusPublished
 	}
 	b.Status = strings.ToUpper(b.Status)
-	if b.Status == "PUBLISHED" && b.PublishedAt == nil {
+	if b.Status == entity.BlogStatusPublished && b.PublishedAt == nil {
 		now := time.Now()
 		b.PublishedAt = &now
 	}
@@ -343,7 +313,7 @@ func (u *contentUsecase) ListGalleries(ctx context.Context, filter entity.ListGa
 	if filter.AppID == "" {
 		filter.AppID = "umroh"
 	}
-	limit, offset := normalizePage(filter.Limit, filter.Offset)
+	limit, offset := entity.NormalizePage(filter.Limit, filter.Offset)
 	filter.Limit = limit
 	filter.Offset = offset
 
@@ -451,7 +421,7 @@ func (u *contentUsecase) ListCustomBlocks(ctx context.Context, filter entity.Lis
 	if filter.AppID == "" {
 		filter.AppID = "umroh"
 	}
-	limit, offset := normalizePage(filter.Limit, filter.Offset)
+	limit, offset := entity.NormalizePage(filter.Limit, filter.Offset)
 	filter.Limit = limit
 	filter.Offset = offset
 
@@ -506,7 +476,7 @@ func (u *contentUsecase) ListFAQs(ctx context.Context, filter entity.ListFAQsFil
 	if filter.AppID == "" {
 		filter.AppID = "umroh"
 	}
-	limit, offset := normalizePage(filter.Limit, filter.Offset)
+	limit, offset := entity.NormalizePage(filter.Limit, filter.Offset)
 	filter.Limit = limit
 	filter.Offset = offset
 
@@ -567,14 +537,7 @@ func (u *contentUsecase) ListTestimonials(ctx context.Context, filter entity.Lis
 	if filter.AppID == "" {
 		filter.AppID = "umroh"
 	}
-	limit := filter.Limit
-	if limit < 1 || limit > 100 {
-		limit = 10
-	}
-	offset := filter.Offset
-	if offset < 0 {
-		offset = 0
-	}
+	limit, offset := entity.NormalizePage(filter.Limit, filter.Offset)
 	filter.Limit = limit
 	filter.Offset = offset
 
@@ -583,20 +546,7 @@ func (u *contentUsecase) ListTestimonials(ctx context.Context, filter entity.Lis
 		return nil, nil, err
 	}
 
-	page := (offset / limit) + 1
-	totalPages := int32(math.Ceil(float64(total) / float64(limit)))
-	if totalPages == 0 && total > 0 {
-		totalPages = 1
-	}
-
-	meta := &entity.PaginationMeta{
-		CurrentPage: page,
-		PerPage:     limit,
-		TotalItems:  total,
-		TotalPages:  totalPages,
-	}
-
-	return testimonials, meta, nil
+	return testimonials, buildPaginationMeta(offset, limit, total), nil
 }
 
 func (u *contentUsecase) CreateTestimonial(ctx context.Context, t *entity.ContentTestimonial) (*entity.ContentTestimonial, error) {

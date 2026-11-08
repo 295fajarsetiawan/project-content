@@ -195,6 +195,8 @@ message ListBlogCategoriesResponse {
   PaginationMeta pagination = 4 [json_name = "pagination"];
 }
 
+// UpdateBlogCategory replaces the complete category representation. Clients must send
+// every field, including is_active; omitted scalar fields are treated as zero values.
 message UpdateBlogCategoryRequest {
   string id = 1 [json_name = "id"];
   string app_id = 2 [json_name = "app_id"];
@@ -370,6 +372,8 @@ message CreateGalleryRequest {
   string cover_url = 6 [json_name = "cover_url"];
 }
 
+// UpdateGallery replaces the complete gallery representation. Clients must send
+// every field, including is_active; omitted scalar fields are treated as zero values.
 message UpdateGalleryRequest {
   string id = 1 [json_name = "id"];
   string app_id = 2 [json_name = "app_id"];

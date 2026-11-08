@@ -36,15 +36,7 @@ func NewContentHandler(usecase content.ContentUsecase) *ContentHandler {
 func (h *ContentHandler) ListBanners(ctx context.Context, req *pb.ListBannersRequest) (*pb.ListBannersResponse, error) {
 	appID, _ := interceptor.ExtractAppID(ctx, req.GetAppId())
 
-	page := req.GetPage()
-	if page < 1 {
-		page = 1
-	}
-	perPage := req.GetPerPage()
-	if perPage < 1 || perPage > 100 {
-		perPage = 10
-	}
-	offset := (page - 1) * perPage
+	perPage, offset := entity.NormalizePageRequest(req.GetPage(), req.GetPerPage())
 
 	bannerFilter := entity.ListBannersFilter{
 		AppID:    appID,
@@ -90,6 +82,9 @@ func (h *ContentHandler) GetBanner(ctx context.Context, req *pb.GetBannerRequest
 	b, err := h.usecase.GetBanner(ctx, appID, bannerID)
 	if err != nil {
 		return nil, mapDomainErrorToGRPC(err)
+	}
+	if !interceptor.IsAdmin(ctx) && !b.IsActive {
+		return nil, mapDomainErrorToGRPC(domainErrors.ErrBannerNotFound)
 	}
 
 	return &pb.BannerResponse{
@@ -230,14 +225,19 @@ func (h *ContentHandler) DeleteBanner(ctx context.Context, req *pb.DeleteBannerR
 func (h *ContentHandler) ListBlogCategories(ctx context.Context, req *pb.ListBlogCategoriesRequest) (*pb.ListBlogCategoriesResponse, error) {
 	appID, _ := interceptor.ExtractAppID(ctx, req.GetAppId())
 
-	perPage, offset := normalizePageRequest(req.GetPage(), req.GetPerPage())
+	perPage, offset := entity.NormalizePageRequest(req.GetPage(), req.GetPerPage())
 
-	categories, meta, err := h.usecase.ListBlogCategories(ctx, entity.ListBlogCategoriesFilter{
+	filter := entity.ListBlogCategoriesFilter{
 		AppID:  appID,
 		Search: req.GetSearch(),
 		Limit:  perPage,
 		Offset: offset,
-	})
+	}
+	if !interceptor.IsAdmin(ctx) {
+		active := true
+		filter.IsActive = &active
+	}
+	categories, meta, err := h.usecase.ListBlogCategories(ctx, filter)
 	if err != nil {
 		return nil, mapDomainErrorToGRPC(err)
 	}
@@ -312,11 +312,11 @@ func (h *ContentHandler) ListBlogs(ctx context.Context, req *pb.ListBlogsRequest
 		}
 	}
 
-	perPage, offset := normalizePageRequest(req.GetPage(), req.GetPerPage())
+	perPage, offset := entity.NormalizePageRequest(req.GetPage(), req.GetPerPage())
 
 	statusFilter := req.GetStatus()
 	if !interceptor.IsAdmin(ctx) {
-		statusFilter = "PUBLISHED"
+		statusFilter = entity.BlogStatusPublished
 	}
 
 	blogs, meta, err := h.usecase.ListBlogs(ctx, entity.ListBlogsFilter{
@@ -362,7 +362,7 @@ func (h *ContentHandler) GetBlog(ctx context.Context, req *pb.GetBlogRequest) (*
 	if err != nil {
 		return nil, mapDomainErrorToGRPC(err)
 	}
-	if !interceptor.IsAdmin(ctx) && b.Status != "PUBLISHED" {
+	if !interceptor.IsAdmin(ctx) && b.Status != entity.BlogStatusPublished {
 		return nil, mapDomainErrorToGRPC(domainErrors.ErrBlogNotFound)
 	}
 
@@ -484,7 +484,7 @@ func (h *ContentHandler) DeleteBlog(ctx context.Context, req *pb.DeleteBlogReque
 func (h *ContentHandler) ListGalleries(ctx context.Context, req *pb.ListGalleriesRequest) (*pb.ListGalleriesResponse, error) {
 	appID, _ := interceptor.ExtractAppID(ctx, req.GetAppId())
 
-	perPage, offset := normalizePageRequest(req.GetPage(), req.GetPerPage())
+	perPage, offset := entity.NormalizePageRequest(req.GetPage(), req.GetPerPage())
 
 	filter := entity.ListGalleriesFilter{
 		AppID:    appID,
@@ -667,7 +667,7 @@ func (h *ContentHandler) DeleteGalleryItem(ctx context.Context, req *pb.DeleteGa
 func (h *ContentHandler) ListCustomBlocks(ctx context.Context, req *pb.ListCustomBlocksRequest) (*pb.ListCustomBlocksResponse, error) {
 	appID, _ := interceptor.ExtractAppID(ctx, req.GetAppId())
 
-	perPage, offset := normalizePageRequest(req.GetPage(), req.GetPerPage())
+	perPage, offset := entity.NormalizePageRequest(req.GetPage(), req.GetPerPage())
 
 	filter := entity.ListCustomBlocksFilter{
 		AppID:       appID,
@@ -767,7 +767,7 @@ func (h *ContentHandler) DeleteCustomBlock(ctx context.Context, req *pb.DeleteCu
 func (h *ContentHandler) ListFAQs(ctx context.Context, req *pb.ListFAQsRequest) (*pb.ListFAQsResponse, error) {
 	appID, _ := interceptor.ExtractAppID(ctx, req.GetAppId())
 
-	perPage, offset := normalizePageRequest(req.GetPage(), req.GetPerPage())
+	perPage, offset := entity.NormalizePageRequest(req.GetPage(), req.GetPerPage())
 
 	filter := entity.ListFAQsFilter{
 		AppID:    appID,
@@ -870,15 +870,7 @@ func (h *ContentHandler) DeleteFAQ(ctx context.Context, req *pb.DeleteFAQRequest
 func (h *ContentHandler) ListTestimonials(ctx context.Context, req *pb.ListTestimonialsRequest) (*pb.ListTestimonialsResponse, error) {
 	appID, _ := interceptor.ExtractAppID(ctx, req.GetAppId())
 
-	page := req.GetPage()
-	if page < 1 {
-		page = 1
-	}
-	perPage := req.GetPerPage()
-	if perPage < 1 || perPage > 100 {
-		perPage = 10
-	}
-	offset := (page - 1) * perPage
+	perPage, offset := entity.NormalizePageRequest(req.GetPage(), req.GetPerPage())
 
 	testimonialFilter := entity.ListTestimonialsFilter{
 		AppID:  appID,
@@ -1074,17 +1066,6 @@ func toProtoBanner(b *entity.ContentBanner) *pb.BannerData {
 		CreatedAt:      b.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:      b.UpdatedAt.Format(time.RFC3339),
 	}
-}
-
-// normalizePageRequest returns the per-page size and offset for a 1-based page request.
-func normalizePageRequest(page, perPage int32) (int32, int32) {
-	if page < 1 {
-		page = 1
-	}
-	if perPage < 1 || perPage > 100 {
-		perPage = 10
-	}
-	return perPage, (page - 1) * perPage
 }
 
 // toProtoPagination converts usecase pagination metadata to its protobuf form.

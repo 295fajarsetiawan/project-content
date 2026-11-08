@@ -4,6 +4,7 @@
 SELECT id, app_id, name, slug, description, is_active, created_at, updated_at
 FROM content_blog_categories
 WHERE app_id = sqlc.arg('app_id')
+  AND (sqlc.narg('is_active')::boolean IS NULL OR is_active = sqlc.narg('is_active'))
   AND (sqlc.narg('search')::text IS NULL OR sqlc.narg('search')::text = '' OR name ILIKE '%' || sqlc.narg('search') || '%' OR description ILIKE '%' || sqlc.narg('search') || '%')
 ORDER BY name ASC
 LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
@@ -12,6 +13,7 @@ LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
 SELECT COUNT(*)
 FROM content_blog_categories
 WHERE app_id = sqlc.arg('app_id')
+  AND (sqlc.narg('is_active')::boolean IS NULL OR is_active = sqlc.narg('is_active'))
   AND (sqlc.narg('search')::text IS NULL OR sqlc.narg('search')::text = '' OR name ILIKE '%' || sqlc.narg('search') || '%' OR description ILIKE '%' || sqlc.narg('search') || '%');
 
 -- name: GetBlogCategoryByID :one
