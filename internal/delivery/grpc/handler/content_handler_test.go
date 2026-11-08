@@ -2,6 +2,7 @@ package handler_test
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
 
@@ -134,7 +135,7 @@ func (m *mockContentUsecase) AddGalleryItem(ctx context.Context, item *entity.Co
 	return item, nil
 }
 
-func (m *mockContentUsecase) DeleteGalleryItem(ctx context.Context, id uuid.UUID) error {
+func (m *mockContentUsecase) DeleteGalleryItem(ctx context.Context, appID string, id uuid.UUID) error {
 	return nil
 }
 
@@ -273,5 +274,26 @@ func TestContentHandler_UploadMedia(t *testing.T) {
 	}
 	if resp.Data.MimeType != "image/png" {
 		t.Errorf("expected image/png, got %s", resp.Data.MimeType)
+	}
+}
+
+func TestContentHandler_UploadMedia_RejectsInvalidInput(t *testing.T) {
+	longName := strings.Repeat("a", 256) + ".png"
+	tests := []struct {
+		name string
+		req  *pb.UploadMediaRequest
+	}{
+		{name: "missing filename", req: &pb.UploadMediaRequest{Base64Content: "abc"}},
+		{name: "missing content", req: &pb.UploadMediaRequest{Filename: "a.png"}},
+		{name: "filename too long", req: &pb.UploadMediaRequest{Filename: longName, Base64Content: "abc"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := handler.NewContentHandler(&mockContentUsecase{})
+			_, err := h.UploadMedia(context.Background(), tt.req)
+			if got := status.Code(err); got != codes.InvalidArgument {
+				t.Fatalf("code = %v, want InvalidArgument (err=%v)", got, err)
+			}
+		})
 	}
 }

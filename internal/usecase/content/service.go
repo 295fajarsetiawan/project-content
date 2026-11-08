@@ -38,7 +38,7 @@ type ContentUsecase interface {
 	CreateGallery(ctx context.Context, gallery *entity.ContentGallery) (*entity.ContentGallery, error)
 	DeleteGallery(ctx context.Context, appID string, id uuid.UUID) error
 	AddGalleryItem(ctx context.Context, item *entity.ContentGalleryItem) (*entity.ContentGalleryItem, error)
-	DeleteGalleryItem(ctx context.Context, id uuid.UUID) error
+	DeleteGalleryItem(ctx context.Context, appID string, id uuid.UUID) error
 
 	// Custom Blocks
 	ListCustomBlocks(ctx context.Context, appID, contentType string) ([]*entity.ContentCustomBlock, error)
@@ -399,11 +399,14 @@ func (u *contentUsecase) AddGalleryItem(ctx context.Context, it *entity.ContentG
 	return u.repo.AddGalleryItem(ctx, it)
 }
 
-func (u *contentUsecase) DeleteGalleryItem(ctx context.Context, id uuid.UUID) error {
+func (u *contentUsecase) DeleteGalleryItem(ctx context.Context, appID string, id uuid.UUID) error {
 	if id == uuid.Nil {
 		return domainErrors.ErrGalleryItemNotFound
 	}
-	return u.repo.DeleteGalleryItem(ctx, id)
+	if appID == "" {
+		appID = "umroh"
+	}
+	return u.repo.DeleteGalleryItem(ctx, appID, id)
 }
 
 // -----------------------------------------------------------------------------

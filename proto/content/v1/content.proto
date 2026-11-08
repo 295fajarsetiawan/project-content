@@ -379,6 +379,7 @@ message GalleryItemResponse {
 
 message DeleteGalleryItemRequest {
   string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
 }
 
 // =============================================================================

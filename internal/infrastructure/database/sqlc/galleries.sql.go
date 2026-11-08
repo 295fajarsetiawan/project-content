@@ -146,11 +146,16 @@ func (q *Queries) DeleteGallery(ctx context.Context, arg DeleteGalleryParams) er
 
 const deleteGalleryItem = `-- name: DeleteGalleryItem :exec
 DELETE FROM content_gallery_items
-WHERE id = $1
+WHERE id = $1 AND app_id = $2
 `
 
-func (q *Queries) DeleteGalleryItem(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteGalleryItem, id)
+type DeleteGalleryItemParams struct {
+	ID    uuid.UUID `db:"id" json:"id"`
+	AppID string    `db:"app_id" json:"app_id"`
+}
+
+func (q *Queries) DeleteGalleryItem(ctx context.Context, arg DeleteGalleryItemParams) error {
+	_, err := q.db.Exec(ctx, deleteGalleryItem, arg.ID, arg.AppID)
 	return err
 }
 

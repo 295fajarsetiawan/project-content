@@ -57,4 +57,4 @@ RETURNING *;
 
 -- name: DeleteGalleryItem :exec
 DELETE FROM content_gallery_items
-WHERE id = $1;
+WHERE id = $1 AND app_id = $2;

@@ -2828,6 +2828,7 @@ func (x *GalleryItemResponse) GetData() *GalleryItemData {
 type DeleteGalleryItemRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	AppId         string                 `protobuf:"bytes,2,opt,name=app_id,proto3" json:"app_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2865,6 +2866,13 @@ func (*DeleteGalleryItemRequest) Descriptor() ([]byte, []int) {
 func (x *DeleteGalleryItemRequest) GetId() string {
 	if x != nil {
 		return x.Id
+	}
+	return ""
+}
+
+func (x *DeleteGalleryItemRequest) GetAppId() string {
+	if x != nil {
+		return x.AppId
 	}
 	return ""
 }
@@ -4948,9 +4956,10 @@ const file_content_v1_content_proto_rawDesc = "" +
 	"\x13GalleryItemResponse\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage\x12\x14\n" +
 	"\x05error\x18\x02 \x01(\tR\x05error\x12/\n" +
-	"\x04data\x18\x03 \x01(\v2\x1b.content.v1.GalleryItemDataR\x04data\"*\n" +
+	"\x04data\x18\x03 \x01(\v2\x1b.content.v1.GalleryItemDataR\x04data\"B\n" +
 	"\x18DeleteGalleryItemRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\xc5\x02\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
+	"\x06app_id\x18\x02 \x01(\tR\x06app_id\"\xc5\x02\n" +
 	"\x0fCustomBlockData\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
 	"\x06app_id\x18\x02 \x01(\tR\x06app_id\x12 \n" +

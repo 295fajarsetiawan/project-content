@@ -580,7 +580,9 @@ func (h *ContentHandler) DeleteGalleryItem(ctx context.Context, req *pb.DeleteGa
 		return nil, status.Error(codes.InvalidArgument, "invalid gallery item id format")
 	}
 
-	if err := h.usecase.DeleteGalleryItem(ctx, itemID); err != nil {
+	appID, _ := interceptor.ExtractAppID(ctx, req.GetAppId())
+
+	if err := h.usecase.DeleteGalleryItem(ctx, appID, itemID); err != nil {
 		return nil, mapDomainErrorToGRPC(err)
 	}
 
@@ -881,8 +883,23 @@ func (h *ContentHandler) DeleteTestimonial(ctx context.Context, req *pb.DeleteTe
 // 5. Media Upload Handler
 // =============================================================================
 
+// uploadMediaRequest declares input rules for UploadMedia via struct tags.
+type uploadMediaRequest struct {
+	Filename      string `validate:"required,max=255"`
+	Base64Content string `validate:"required"`
+	Folder        string `validate:"omitempty,max=100"`
+}
+
 func (h *ContentHandler) UploadMedia(ctx context.Context, req *pb.UploadMediaRequest) (*pb.UploadMediaResponse, error) {
 	appID, _ := interceptor.ExtractAppID(ctx, req.GetAppId())
+
+	if err := validateRequest(uploadMediaRequest{
+		Filename:      req.GetFilename(),
+		Base64Content: req.GetBase64Content(),
+		Folder:        req.GetFolder(),
+	}); err != nil {
+		return nil, err
+	}
 
 	folder := req.GetFolder()
 	if folder == "" {

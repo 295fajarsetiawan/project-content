@@ -230,7 +230,7 @@ type ContentRepository interface {
 	DeleteGallery(ctx context.Context, appID string, id uuid.UUID) error
 	ListGalleryItems(ctx context.Context, galleryID uuid.UUID, isActive *bool) ([]ContentGalleryItem, error)
 	AddGalleryItem(ctx context.Context, item *ContentGalleryItem) (*ContentGalleryItem, error)
-	DeleteGalleryItem(ctx context.Context, id uuid.UUID) error
+	DeleteGalleryItem(ctx context.Context, appID string, id uuid.UUID) error
 
 	// Custom Blocks
 	ListCustomBlocks(ctx context.Context, appID, contentType string, isActive *bool) ([]*ContentCustomBlock, error)
