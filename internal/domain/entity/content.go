@@ -40,6 +40,31 @@ type ContentBanner struct {
 	UpdatedAt      time.Time              `json:"updated_at"`
 }
 
+type ListBlogCategoriesFilter struct {
+	AppID  string
+	Search string
+	Limit  int32
+	Offset int32
+}
+
+type ListCustomBlocksFilter struct {
+	AppID       string
+	ContentType string
+	IsActive    *bool
+	Search      string
+	Limit       int32
+	Offset      int32
+}
+
+type ListFAQsFilter struct {
+	AppID    string
+	Category string
+	IsActive *bool
+	Search   string
+	Limit    int32
+	Offset   int32
+}
+
 type ListBannersFilter struct {
 	AppID    string
 	Position string
@@ -208,10 +233,11 @@ type ContentRepository interface {
 	DeleteBanner(ctx context.Context, appID string, id uuid.UUID) error
 
 	// Blog Categories
-	ListBlogCategories(ctx context.Context, appID string) ([]*ContentBlogCategory, error)
+	ListBlogCategories(ctx context.Context, filter ListBlogCategoriesFilter) ([]*ContentBlogCategory, int64, error)
 	GetBlogCategoryByID(ctx context.Context, appID string, id uuid.UUID) (*ContentBlogCategory, error)
 	GetBlogCategoryBySlug(ctx context.Context, appID, slug string) (*ContentBlogCategory, error)
 	CreateBlogCategory(ctx context.Context, category *ContentBlogCategory) (*ContentBlogCategory, error)
+	UpdateBlogCategory(ctx context.Context, category *ContentBlogCategory) (*ContentBlogCategory, error)
 
 	// Blogs
 	ListBlogs(ctx context.Context, filter ListBlogsFilter) ([]*ContentBlog, int64, error)
@@ -227,19 +253,20 @@ type ContentRepository interface {
 	GetGalleryByID(ctx context.Context, appID string, id uuid.UUID) (*ContentGallery, error)
 	GetGalleryBySlug(ctx context.Context, appID, slug string) (*ContentGallery, error)
 	CreateGallery(ctx context.Context, gallery *ContentGallery) (*ContentGallery, error)
+	UpdateGallery(ctx context.Context, gallery *ContentGallery) (*ContentGallery, error)
 	DeleteGallery(ctx context.Context, appID string, id uuid.UUID) error
 	ListGalleryItems(ctx context.Context, galleryID uuid.UUID, isActive *bool) ([]ContentGalleryItem, error)
 	AddGalleryItem(ctx context.Context, item *ContentGalleryItem) (*ContentGalleryItem, error)
 	DeleteGalleryItem(ctx context.Context, appID string, id uuid.UUID) error
 
 	// Custom Blocks
-	ListCustomBlocks(ctx context.Context, appID, contentType string, isActive *bool) ([]*ContentCustomBlock, error)
+	ListCustomBlocks(ctx context.Context, filter ListCustomBlocksFilter) ([]*ContentCustomBlock, int64, error)
 	GetCustomBlockBySection(ctx context.Context, appID, sectionKey string) (*ContentCustomBlock, error)
 	UpsertCustomBlock(ctx context.Context, block *ContentCustomBlock) (*ContentCustomBlock, error)
 	DeleteCustomBlock(ctx context.Context, appID string, id uuid.UUID) error
 
 	// FAQs
-	ListFAQs(ctx context.Context, appID, category string, isActive *bool) ([]*ContentFAQ, error)
+	ListFAQs(ctx context.Context, filter ListFAQsFilter) ([]*ContentFAQ, int64, error)
 	CreateFAQ(ctx context.Context, faq *ContentFAQ) (*ContentFAQ, error)
 	UpdateFAQ(ctx context.Context, faq *ContentFAQ) (*ContentFAQ, error)
 	DeleteFAQ(ctx context.Context, appID string, id uuid.UUID) error

@@ -1012,6 +1012,9 @@ func (x *BlogCategoryData) GetCreatedAt() string {
 type ListBlogCategoriesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AppId         string                 `protobuf:"bytes,1,opt,name=app_id,proto3" json:"app_id,omitempty"`
+	Page          int32                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
+	PerPage       int32                  `protobuf:"varint,3,opt,name=per_page,proto3" json:"per_page,omitempty"`
+	Search        string                 `protobuf:"bytes,4,opt,name=search,proto3" json:"search,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1053,11 +1056,33 @@ func (x *ListBlogCategoriesRequest) GetAppId() string {
 	return ""
 }
 
+func (x *ListBlogCategoriesRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListBlogCategoriesRequest) GetPerPage() int32 {
+	if x != nil {
+		return x.PerPage
+	}
+	return 0
+}
+
+func (x *ListBlogCategoriesRequest) GetSearch() string {
+	if x != nil {
+		return x.Search
+	}
+	return ""
+}
+
 type ListBlogCategoriesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
 	Error         string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
 	Data          []*BlogCategoryData    `protobuf:"bytes,3,rep,name=data,proto3" json:"data,omitempty"`
+	Pagination    *PaginationMeta        `protobuf:"bytes,4,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1113,6 +1138,97 @@ func (x *ListBlogCategoriesResponse) GetData() []*BlogCategoryData {
 	return nil
 }
 
+func (x *ListBlogCategoriesResponse) GetPagination() *PaginationMeta {
+	if x != nil {
+		return x.Pagination
+	}
+	return nil
+}
+
+type UpdateBlogCategoryRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	AppId         string                 `protobuf:"bytes,2,opt,name=app_id,proto3" json:"app_id,omitempty"`
+	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Slug          string                 `protobuf:"bytes,4,opt,name=slug,proto3" json:"slug,omitempty"`
+	Description   string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	IsActive      bool                   `protobuf:"varint,6,opt,name=is_active,proto3" json:"is_active,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateBlogCategoryRequest) Reset() {
+	*x = UpdateBlogCategoryRequest{}
+	mi := &file_content_v1_content_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateBlogCategoryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateBlogCategoryRequest) ProtoMessage() {}
+
+func (x *UpdateBlogCategoryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_content_v1_content_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateBlogCategoryRequest.ProtoReflect.Descriptor instead.
+func (*UpdateBlogCategoryRequest) Descriptor() ([]byte, []int) {
+	return file_content_v1_content_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *UpdateBlogCategoryRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *UpdateBlogCategoryRequest) GetAppId() string {
+	if x != nil {
+		return x.AppId
+	}
+	return ""
+}
+
+func (x *UpdateBlogCategoryRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *UpdateBlogCategoryRequest) GetSlug() string {
+	if x != nil {
+		return x.Slug
+	}
+	return ""
+}
+
+func (x *UpdateBlogCategoryRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *UpdateBlogCategoryRequest) GetIsActive() bool {
+	if x != nil {
+		return x.IsActive
+	}
+	return false
+}
+
 type CreateBlogCategoryRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AppId         string                 `protobuf:"bytes,1,opt,name=app_id,proto3" json:"app_id,omitempty"`
@@ -1125,7 +1241,7 @@ type CreateBlogCategoryRequest struct {
 
 func (x *CreateBlogCategoryRequest) Reset() {
 	*x = CreateBlogCategoryRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[13]
+	mi := &file_content_v1_content_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1137,7 +1253,7 @@ func (x *CreateBlogCategoryRequest) String() string {
 func (*CreateBlogCategoryRequest) ProtoMessage() {}
 
 func (x *CreateBlogCategoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[13]
+	mi := &file_content_v1_content_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1150,7 +1266,7 @@ func (x *CreateBlogCategoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateBlogCategoryRequest.ProtoReflect.Descriptor instead.
 func (*CreateBlogCategoryRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{13}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *CreateBlogCategoryRequest) GetAppId() string {
@@ -1192,7 +1308,7 @@ type BlogCategoryResponse struct {
 
 func (x *BlogCategoryResponse) Reset() {
 	*x = BlogCategoryResponse{}
-	mi := &file_content_v1_content_proto_msgTypes[14]
+	mi := &file_content_v1_content_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1204,7 +1320,7 @@ func (x *BlogCategoryResponse) String() string {
 func (*BlogCategoryResponse) ProtoMessage() {}
 
 func (x *BlogCategoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[14]
+	mi := &file_content_v1_content_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1217,7 +1333,7 @@ func (x *BlogCategoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BlogCategoryResponse.ProtoReflect.Descriptor instead.
 func (*BlogCategoryResponse) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{14}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *BlogCategoryResponse) GetMessage() string {
@@ -1269,7 +1385,7 @@ type BlogData struct {
 
 func (x *BlogData) Reset() {
 	*x = BlogData{}
-	mi := &file_content_v1_content_proto_msgTypes[15]
+	mi := &file_content_v1_content_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1281,7 +1397,7 @@ func (x *BlogData) String() string {
 func (*BlogData) ProtoMessage() {}
 
 func (x *BlogData) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[15]
+	mi := &file_content_v1_content_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1294,7 +1410,7 @@ func (x *BlogData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BlogData.ProtoReflect.Descriptor instead.
 func (*BlogData) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{15}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *BlogData) GetId() string {
@@ -1451,7 +1567,7 @@ type ListBlogsRequest struct {
 
 func (x *ListBlogsRequest) Reset() {
 	*x = ListBlogsRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[16]
+	mi := &file_content_v1_content_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1463,7 +1579,7 @@ func (x *ListBlogsRequest) String() string {
 func (*ListBlogsRequest) ProtoMessage() {}
 
 func (x *ListBlogsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[16]
+	mi := &file_content_v1_content_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1476,7 +1592,7 @@ func (x *ListBlogsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListBlogsRequest.ProtoReflect.Descriptor instead.
 func (*ListBlogsRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{16}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *ListBlogsRequest) GetAppId() string {
@@ -1533,7 +1649,7 @@ type ListBlogsResponse struct {
 
 func (x *ListBlogsResponse) Reset() {
 	*x = ListBlogsResponse{}
-	mi := &file_content_v1_content_proto_msgTypes[17]
+	mi := &file_content_v1_content_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1545,7 +1661,7 @@ func (x *ListBlogsResponse) String() string {
 func (*ListBlogsResponse) ProtoMessage() {}
 
 func (x *ListBlogsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[17]
+	mi := &file_content_v1_content_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1558,7 +1674,7 @@ func (x *ListBlogsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListBlogsResponse.ProtoReflect.Descriptor instead.
 func (*ListBlogsResponse) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{17}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *ListBlogsResponse) GetMessage() string {
@@ -1600,7 +1716,7 @@ type GetBlogRequest struct {
 
 func (x *GetBlogRequest) Reset() {
 	*x = GetBlogRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[18]
+	mi := &file_content_v1_content_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1612,7 +1728,7 @@ func (x *GetBlogRequest) String() string {
 func (*GetBlogRequest) ProtoMessage() {}
 
 func (x *GetBlogRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[18]
+	mi := &file_content_v1_content_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1625,7 +1741,7 @@ func (x *GetBlogRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetBlogRequest.ProtoReflect.Descriptor instead.
 func (*GetBlogRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{18}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *GetBlogRequest) GetId() string {
@@ -1660,7 +1776,7 @@ type BlogResponse struct {
 
 func (x *BlogResponse) Reset() {
 	*x = BlogResponse{}
-	mi := &file_content_v1_content_proto_msgTypes[19]
+	mi := &file_content_v1_content_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1672,7 +1788,7 @@ func (x *BlogResponse) String() string {
 func (*BlogResponse) ProtoMessage() {}
 
 func (x *BlogResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[19]
+	mi := &file_content_v1_content_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1685,7 +1801,7 @@ func (x *BlogResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BlogResponse.ProtoReflect.Descriptor instead.
 func (*BlogResponse) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{19}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *BlogResponse) GetMessage() string {
@@ -1730,7 +1846,7 @@ type CreateBlogRequest struct {
 
 func (x *CreateBlogRequest) Reset() {
 	*x = CreateBlogRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[20]
+	mi := &file_content_v1_content_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1742,7 +1858,7 @@ func (x *CreateBlogRequest) String() string {
 func (*CreateBlogRequest) ProtoMessage() {}
 
 func (x *CreateBlogRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[20]
+	mi := &file_content_v1_content_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1755,7 +1871,7 @@ func (x *CreateBlogRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateBlogRequest.ProtoReflect.Descriptor instead.
 func (*CreateBlogRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{20}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *CreateBlogRequest) GetAppId() string {
@@ -1870,7 +1986,7 @@ type UpdateBlogRequest struct {
 
 func (x *UpdateBlogRequest) Reset() {
 	*x = UpdateBlogRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[21]
+	mi := &file_content_v1_content_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1882,7 +1998,7 @@ func (x *UpdateBlogRequest) String() string {
 func (*UpdateBlogRequest) ProtoMessage() {}
 
 func (x *UpdateBlogRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[21]
+	mi := &file_content_v1_content_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1895,7 +2011,7 @@ func (x *UpdateBlogRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateBlogRequest.ProtoReflect.Descriptor instead.
 func (*UpdateBlogRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{21}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *UpdateBlogRequest) GetId() string {
@@ -1999,7 +2115,7 @@ type DeleteBlogRequest struct {
 
 func (x *DeleteBlogRequest) Reset() {
 	*x = DeleteBlogRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[22]
+	mi := &file_content_v1_content_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2011,7 +2127,7 @@ func (x *DeleteBlogRequest) String() string {
 func (*DeleteBlogRequest) ProtoMessage() {}
 
 func (x *DeleteBlogRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[22]
+	mi := &file_content_v1_content_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2024,7 +2140,7 @@ func (x *DeleteBlogRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteBlogRequest.ProtoReflect.Descriptor instead.
 func (*DeleteBlogRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{22}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *DeleteBlogRequest) GetId() string {
@@ -2059,7 +2175,7 @@ type GalleryItemData struct {
 
 func (x *GalleryItemData) Reset() {
 	*x = GalleryItemData{}
-	mi := &file_content_v1_content_proto_msgTypes[23]
+	mi := &file_content_v1_content_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2071,7 +2187,7 @@ func (x *GalleryItemData) String() string {
 func (*GalleryItemData) ProtoMessage() {}
 
 func (x *GalleryItemData) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[23]
+	mi := &file_content_v1_content_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2084,7 +2200,7 @@ func (x *GalleryItemData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GalleryItemData.ProtoReflect.Descriptor instead.
 func (*GalleryItemData) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{23}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *GalleryItemData) GetId() string {
@@ -2175,7 +2291,7 @@ type GalleryData struct {
 
 func (x *GalleryData) Reset() {
 	*x = GalleryData{}
-	mi := &file_content_v1_content_proto_msgTypes[24]
+	mi := &file_content_v1_content_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2187,7 +2303,7 @@ func (x *GalleryData) String() string {
 func (*GalleryData) ProtoMessage() {}
 
 func (x *GalleryData) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[24]
+	mi := &file_content_v1_content_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2200,7 +2316,7 @@ func (x *GalleryData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GalleryData.ProtoReflect.Descriptor instead.
 func (*GalleryData) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{24}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *GalleryData) GetId() string {
@@ -2285,7 +2401,7 @@ type ListGalleriesRequest struct {
 
 func (x *ListGalleriesRequest) Reset() {
 	*x = ListGalleriesRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[25]
+	mi := &file_content_v1_content_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2297,7 +2413,7 @@ func (x *ListGalleriesRequest) String() string {
 func (*ListGalleriesRequest) ProtoMessage() {}
 
 func (x *ListGalleriesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[25]
+	mi := &file_content_v1_content_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2310,7 +2426,7 @@ func (x *ListGalleriesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListGalleriesRequest.ProtoReflect.Descriptor instead.
 func (*ListGalleriesRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{25}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *ListGalleriesRequest) GetAppId() string {
@@ -2353,7 +2469,7 @@ type ListGalleriesResponse struct {
 
 func (x *ListGalleriesResponse) Reset() {
 	*x = ListGalleriesResponse{}
-	mi := &file_content_v1_content_proto_msgTypes[26]
+	mi := &file_content_v1_content_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2365,7 +2481,7 @@ func (x *ListGalleriesResponse) String() string {
 func (*ListGalleriesResponse) ProtoMessage() {}
 
 func (x *ListGalleriesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[26]
+	mi := &file_content_v1_content_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2378,7 +2494,7 @@ func (x *ListGalleriesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListGalleriesResponse.ProtoReflect.Descriptor instead.
 func (*ListGalleriesResponse) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{26}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *ListGalleriesResponse) GetMessage() string {
@@ -2420,7 +2536,7 @@ type GetGalleryRequest struct {
 
 func (x *GetGalleryRequest) Reset() {
 	*x = GetGalleryRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[27]
+	mi := &file_content_v1_content_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2432,7 +2548,7 @@ func (x *GetGalleryRequest) String() string {
 func (*GetGalleryRequest) ProtoMessage() {}
 
 func (x *GetGalleryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[27]
+	mi := &file_content_v1_content_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2445,7 +2561,7 @@ func (x *GetGalleryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetGalleryRequest.ProtoReflect.Descriptor instead.
 func (*GetGalleryRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{27}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *GetGalleryRequest) GetId() string {
@@ -2480,7 +2596,7 @@ type GalleryResponse struct {
 
 func (x *GalleryResponse) Reset() {
 	*x = GalleryResponse{}
-	mi := &file_content_v1_content_proto_msgTypes[28]
+	mi := &file_content_v1_content_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2492,7 +2608,7 @@ func (x *GalleryResponse) String() string {
 func (*GalleryResponse) ProtoMessage() {}
 
 func (x *GalleryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[28]
+	mi := &file_content_v1_content_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2505,7 +2621,7 @@ func (x *GalleryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GalleryResponse.ProtoReflect.Descriptor instead.
 func (*GalleryResponse) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{28}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *GalleryResponse) GetMessage() string {
@@ -2543,7 +2659,7 @@ type CreateGalleryRequest struct {
 
 func (x *CreateGalleryRequest) Reset() {
 	*x = CreateGalleryRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[29]
+	mi := &file_content_v1_content_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2555,7 +2671,7 @@ func (x *CreateGalleryRequest) String() string {
 func (*CreateGalleryRequest) ProtoMessage() {}
 
 func (x *CreateGalleryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[29]
+	mi := &file_content_v1_content_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2568,7 +2684,7 @@ func (x *CreateGalleryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateGalleryRequest.ProtoReflect.Descriptor instead.
 func (*CreateGalleryRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{29}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *CreateGalleryRequest) GetAppId() string {
@@ -2613,6 +2729,106 @@ func (x *CreateGalleryRequest) GetCoverUrl() string {
 	return ""
 }
 
+type UpdateGalleryRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	AppId         string                 `protobuf:"bytes,2,opt,name=app_id,proto3" json:"app_id,omitempty"`
+	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	Slug          string                 `protobuf:"bytes,4,opt,name=slug,proto3" json:"slug,omitempty"`
+	Description   string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	Category      string                 `protobuf:"bytes,6,opt,name=category,proto3" json:"category,omitempty"`
+	CoverUrl      string                 `protobuf:"bytes,7,opt,name=cover_url,proto3" json:"cover_url,omitempty"`
+	IsActive      bool                   `protobuf:"varint,8,opt,name=is_active,proto3" json:"is_active,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateGalleryRequest) Reset() {
+	*x = UpdateGalleryRequest{}
+	mi := &file_content_v1_content_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateGalleryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateGalleryRequest) ProtoMessage() {}
+
+func (x *UpdateGalleryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_content_v1_content_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateGalleryRequest.ProtoReflect.Descriptor instead.
+func (*UpdateGalleryRequest) Descriptor() ([]byte, []int) {
+	return file_content_v1_content_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *UpdateGalleryRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *UpdateGalleryRequest) GetAppId() string {
+	if x != nil {
+		return x.AppId
+	}
+	return ""
+}
+
+func (x *UpdateGalleryRequest) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *UpdateGalleryRequest) GetSlug() string {
+	if x != nil {
+		return x.Slug
+	}
+	return ""
+}
+
+func (x *UpdateGalleryRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *UpdateGalleryRequest) GetCategory() string {
+	if x != nil {
+		return x.Category
+	}
+	return ""
+}
+
+func (x *UpdateGalleryRequest) GetCoverUrl() string {
+	if x != nil {
+		return x.CoverUrl
+	}
+	return ""
+}
+
+func (x *UpdateGalleryRequest) GetIsActive() bool {
+	if x != nil {
+		return x.IsActive
+	}
+	return false
+}
+
 type DeleteGalleryRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -2623,7 +2839,7 @@ type DeleteGalleryRequest struct {
 
 func (x *DeleteGalleryRequest) Reset() {
 	*x = DeleteGalleryRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[30]
+	mi := &file_content_v1_content_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2635,7 +2851,7 @@ func (x *DeleteGalleryRequest) String() string {
 func (*DeleteGalleryRequest) ProtoMessage() {}
 
 func (x *DeleteGalleryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[30]
+	mi := &file_content_v1_content_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2648,7 +2864,7 @@ func (x *DeleteGalleryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteGalleryRequest.ProtoReflect.Descriptor instead.
 func (*DeleteGalleryRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{30}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *DeleteGalleryRequest) GetId() string {
@@ -2681,7 +2897,7 @@ type AddGalleryItemRequest struct {
 
 func (x *AddGalleryItemRequest) Reset() {
 	*x = AddGalleryItemRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[31]
+	mi := &file_content_v1_content_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2693,7 +2909,7 @@ func (x *AddGalleryItemRequest) String() string {
 func (*AddGalleryItemRequest) ProtoMessage() {}
 
 func (x *AddGalleryItemRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[31]
+	mi := &file_content_v1_content_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2706,7 +2922,7 @@ func (x *AddGalleryItemRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddGalleryItemRequest.ProtoReflect.Descriptor instead.
 func (*AddGalleryItemRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{31}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *AddGalleryItemRequest) GetGalleryId() string {
@@ -2776,7 +2992,7 @@ type GalleryItemResponse struct {
 
 func (x *GalleryItemResponse) Reset() {
 	*x = GalleryItemResponse{}
-	mi := &file_content_v1_content_proto_msgTypes[32]
+	mi := &file_content_v1_content_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2788,7 +3004,7 @@ func (x *GalleryItemResponse) String() string {
 func (*GalleryItemResponse) ProtoMessage() {}
 
 func (x *GalleryItemResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[32]
+	mi := &file_content_v1_content_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2801,7 +3017,7 @@ func (x *GalleryItemResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GalleryItemResponse.ProtoReflect.Descriptor instead.
 func (*GalleryItemResponse) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{32}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *GalleryItemResponse) GetMessage() string {
@@ -2835,7 +3051,7 @@ type DeleteGalleryItemRequest struct {
 
 func (x *DeleteGalleryItemRequest) Reset() {
 	*x = DeleteGalleryItemRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[33]
+	mi := &file_content_v1_content_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2847,7 +3063,7 @@ func (x *DeleteGalleryItemRequest) String() string {
 func (*DeleteGalleryItemRequest) ProtoMessage() {}
 
 func (x *DeleteGalleryItemRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[33]
+	mi := &file_content_v1_content_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2860,7 +3076,7 @@ func (x *DeleteGalleryItemRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteGalleryItemRequest.ProtoReflect.Descriptor instead.
 func (*DeleteGalleryItemRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{33}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *DeleteGalleryItemRequest) GetId() string {
@@ -2896,7 +3112,7 @@ type CustomBlockData struct {
 
 func (x *CustomBlockData) Reset() {
 	*x = CustomBlockData{}
-	mi := &file_content_v1_content_proto_msgTypes[34]
+	mi := &file_content_v1_content_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2908,7 +3124,7 @@ func (x *CustomBlockData) String() string {
 func (*CustomBlockData) ProtoMessage() {}
 
 func (x *CustomBlockData) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[34]
+	mi := &file_content_v1_content_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2921,7 +3137,7 @@ func (x *CustomBlockData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CustomBlockData.ProtoReflect.Descriptor instead.
 func (*CustomBlockData) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{34}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *CustomBlockData) GetId() string {
@@ -3005,13 +3221,16 @@ type ListCustomBlocksRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AppId         string                 `protobuf:"bytes,1,opt,name=app_id,proto3" json:"app_id,omitempty"`
 	ContentType   string                 `protobuf:"bytes,2,opt,name=content_type,proto3" json:"content_type,omitempty"`
+	Page          int32                  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
+	PerPage       int32                  `protobuf:"varint,4,opt,name=per_page,proto3" json:"per_page,omitempty"`
+	Search        string                 `protobuf:"bytes,5,opt,name=search,proto3" json:"search,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListCustomBlocksRequest) Reset() {
 	*x = ListCustomBlocksRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[35]
+	mi := &file_content_v1_content_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3023,7 +3242,7 @@ func (x *ListCustomBlocksRequest) String() string {
 func (*ListCustomBlocksRequest) ProtoMessage() {}
 
 func (x *ListCustomBlocksRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[35]
+	mi := &file_content_v1_content_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3036,7 +3255,7 @@ func (x *ListCustomBlocksRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCustomBlocksRequest.ProtoReflect.Descriptor instead.
 func (*ListCustomBlocksRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{35}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *ListCustomBlocksRequest) GetAppId() string {
@@ -3053,18 +3272,40 @@ func (x *ListCustomBlocksRequest) GetContentType() string {
 	return ""
 }
 
+func (x *ListCustomBlocksRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListCustomBlocksRequest) GetPerPage() int32 {
+	if x != nil {
+		return x.PerPage
+	}
+	return 0
+}
+
+func (x *ListCustomBlocksRequest) GetSearch() string {
+	if x != nil {
+		return x.Search
+	}
+	return ""
+}
+
 type ListCustomBlocksResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
 	Error         string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
 	Data          []*CustomBlockData     `protobuf:"bytes,3,rep,name=data,proto3" json:"data,omitempty"`
+	Pagination    *PaginationMeta        `protobuf:"bytes,4,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListCustomBlocksResponse) Reset() {
 	*x = ListCustomBlocksResponse{}
-	mi := &file_content_v1_content_proto_msgTypes[36]
+	mi := &file_content_v1_content_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3076,7 +3317,7 @@ func (x *ListCustomBlocksResponse) String() string {
 func (*ListCustomBlocksResponse) ProtoMessage() {}
 
 func (x *ListCustomBlocksResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[36]
+	mi := &file_content_v1_content_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3089,7 +3330,7 @@ func (x *ListCustomBlocksResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCustomBlocksResponse.ProtoReflect.Descriptor instead.
 func (*ListCustomBlocksResponse) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{36}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *ListCustomBlocksResponse) GetMessage() string {
@@ -3113,6 +3354,13 @@ func (x *ListCustomBlocksResponse) GetData() []*CustomBlockData {
 	return nil
 }
 
+func (x *ListCustomBlocksResponse) GetPagination() *PaginationMeta {
+	if x != nil {
+		return x.Pagination
+	}
+	return nil
+}
+
 type GetCustomBlockRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	SectionKey    string                 `protobuf:"bytes,1,opt,name=section_key,proto3" json:"section_key,omitempty"`
@@ -3123,7 +3371,7 @@ type GetCustomBlockRequest struct {
 
 func (x *GetCustomBlockRequest) Reset() {
 	*x = GetCustomBlockRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[37]
+	mi := &file_content_v1_content_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3135,7 +3383,7 @@ func (x *GetCustomBlockRequest) String() string {
 func (*GetCustomBlockRequest) ProtoMessage() {}
 
 func (x *GetCustomBlockRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[37]
+	mi := &file_content_v1_content_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3148,7 +3396,7 @@ func (x *GetCustomBlockRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCustomBlockRequest.ProtoReflect.Descriptor instead.
 func (*GetCustomBlockRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{37}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *GetCustomBlockRequest) GetSectionKey() string {
@@ -3176,7 +3424,7 @@ type CustomBlockResponse struct {
 
 func (x *CustomBlockResponse) Reset() {
 	*x = CustomBlockResponse{}
-	mi := &file_content_v1_content_proto_msgTypes[38]
+	mi := &file_content_v1_content_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3188,7 +3436,7 @@ func (x *CustomBlockResponse) String() string {
 func (*CustomBlockResponse) ProtoMessage() {}
 
 func (x *CustomBlockResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[38]
+	mi := &file_content_v1_content_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3201,7 +3449,7 @@ func (x *CustomBlockResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CustomBlockResponse.ProtoReflect.Descriptor instead.
 func (*CustomBlockResponse) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{38}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *CustomBlockResponse) GetMessage() string {
@@ -3243,7 +3491,7 @@ type UpsertCustomBlockRequest struct {
 
 func (x *UpsertCustomBlockRequest) Reset() {
 	*x = UpsertCustomBlockRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[39]
+	mi := &file_content_v1_content_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3255,7 +3503,7 @@ func (x *UpsertCustomBlockRequest) String() string {
 func (*UpsertCustomBlockRequest) ProtoMessage() {}
 
 func (x *UpsertCustomBlockRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[39]
+	mi := &file_content_v1_content_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3268,7 +3516,7 @@ func (x *UpsertCustomBlockRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertCustomBlockRequest.ProtoReflect.Descriptor instead.
 func (*UpsertCustomBlockRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{39}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *UpsertCustomBlockRequest) GetAppId() string {
@@ -3351,7 +3599,7 @@ type DeleteCustomBlockRequest struct {
 
 func (x *DeleteCustomBlockRequest) Reset() {
 	*x = DeleteCustomBlockRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[40]
+	mi := &file_content_v1_content_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3363,7 +3611,7 @@ func (x *DeleteCustomBlockRequest) String() string {
 func (*DeleteCustomBlockRequest) ProtoMessage() {}
 
 func (x *DeleteCustomBlockRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[40]
+	mi := &file_content_v1_content_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3376,7 +3624,7 @@ func (x *DeleteCustomBlockRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteCustomBlockRequest.ProtoReflect.Descriptor instead.
 func (*DeleteCustomBlockRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{40}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *DeleteCustomBlockRequest) GetId() string {
@@ -3408,7 +3656,7 @@ type FAQData struct {
 
 func (x *FAQData) Reset() {
 	*x = FAQData{}
-	mi := &file_content_v1_content_proto_msgTypes[41]
+	mi := &file_content_v1_content_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3420,7 +3668,7 @@ func (x *FAQData) String() string {
 func (*FAQData) ProtoMessage() {}
 
 func (x *FAQData) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[41]
+	mi := &file_content_v1_content_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3433,7 +3681,7 @@ func (x *FAQData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FAQData.ProtoReflect.Descriptor instead.
 func (*FAQData) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{41}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *FAQData) GetId() string {
@@ -3489,13 +3737,16 @@ type ListFAQsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AppId         string                 `protobuf:"bytes,1,opt,name=app_id,proto3" json:"app_id,omitempty"`
 	Category      string                 `protobuf:"bytes,2,opt,name=category,proto3" json:"category,omitempty"`
+	Page          int32                  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
+	PerPage       int32                  `protobuf:"varint,4,opt,name=per_page,proto3" json:"per_page,omitempty"`
+	Search        string                 `protobuf:"bytes,5,opt,name=search,proto3" json:"search,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListFAQsRequest) Reset() {
 	*x = ListFAQsRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[42]
+	mi := &file_content_v1_content_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3507,7 +3758,7 @@ func (x *ListFAQsRequest) String() string {
 func (*ListFAQsRequest) ProtoMessage() {}
 
 func (x *ListFAQsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[42]
+	mi := &file_content_v1_content_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3520,7 +3771,7 @@ func (x *ListFAQsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListFAQsRequest.ProtoReflect.Descriptor instead.
 func (*ListFAQsRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{42}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *ListFAQsRequest) GetAppId() string {
@@ -3537,18 +3788,40 @@ func (x *ListFAQsRequest) GetCategory() string {
 	return ""
 }
 
+func (x *ListFAQsRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListFAQsRequest) GetPerPage() int32 {
+	if x != nil {
+		return x.PerPage
+	}
+	return 0
+}
+
+func (x *ListFAQsRequest) GetSearch() string {
+	if x != nil {
+		return x.Search
+	}
+	return ""
+}
+
 type ListFAQsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
 	Error         string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
 	Data          []*FAQData             `protobuf:"bytes,3,rep,name=data,proto3" json:"data,omitempty"`
+	Pagination    *PaginationMeta        `protobuf:"bytes,4,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListFAQsResponse) Reset() {
 	*x = ListFAQsResponse{}
-	mi := &file_content_v1_content_proto_msgTypes[43]
+	mi := &file_content_v1_content_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3560,7 +3833,7 @@ func (x *ListFAQsResponse) String() string {
 func (*ListFAQsResponse) ProtoMessage() {}
 
 func (x *ListFAQsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[43]
+	mi := &file_content_v1_content_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3573,7 +3846,7 @@ func (x *ListFAQsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListFAQsResponse.ProtoReflect.Descriptor instead.
 func (*ListFAQsResponse) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{43}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *ListFAQsResponse) GetMessage() string {
@@ -3597,6 +3870,13 @@ func (x *ListFAQsResponse) GetData() []*FAQData {
 	return nil
 }
 
+func (x *ListFAQsResponse) GetPagination() *PaginationMeta {
+	if x != nil {
+		return x.Pagination
+	}
+	return nil
+}
+
 type CreateFAQRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AppId         string                 `protobuf:"bytes,1,opt,name=app_id,proto3" json:"app_id,omitempty"`
@@ -3610,7 +3890,7 @@ type CreateFAQRequest struct {
 
 func (x *CreateFAQRequest) Reset() {
 	*x = CreateFAQRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[44]
+	mi := &file_content_v1_content_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3622,7 +3902,7 @@ func (x *CreateFAQRequest) String() string {
 func (*CreateFAQRequest) ProtoMessage() {}
 
 func (x *CreateFAQRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[44]
+	mi := &file_content_v1_content_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3635,7 +3915,7 @@ func (x *CreateFAQRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateFAQRequest.ProtoReflect.Descriptor instead.
 func (*CreateFAQRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{44}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *CreateFAQRequest) GetAppId() string {
@@ -3688,7 +3968,7 @@ type UpdateFAQRequest struct {
 
 func (x *UpdateFAQRequest) Reset() {
 	*x = UpdateFAQRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[45]
+	mi := &file_content_v1_content_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3700,7 +3980,7 @@ func (x *UpdateFAQRequest) String() string {
 func (*UpdateFAQRequest) ProtoMessage() {}
 
 func (x *UpdateFAQRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[45]
+	mi := &file_content_v1_content_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3713,7 +3993,7 @@ func (x *UpdateFAQRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateFAQRequest.ProtoReflect.Descriptor instead.
 func (*UpdateFAQRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{45}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *UpdateFAQRequest) GetId() string {
@@ -3776,7 +4056,7 @@ type FAQResponse struct {
 
 func (x *FAQResponse) Reset() {
 	*x = FAQResponse{}
-	mi := &file_content_v1_content_proto_msgTypes[46]
+	mi := &file_content_v1_content_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3788,7 +4068,7 @@ func (x *FAQResponse) String() string {
 func (*FAQResponse) ProtoMessage() {}
 
 func (x *FAQResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[46]
+	mi := &file_content_v1_content_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3801,7 +4081,7 @@ func (x *FAQResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FAQResponse.ProtoReflect.Descriptor instead.
 func (*FAQResponse) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{46}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *FAQResponse) GetMessage() string {
@@ -3835,7 +4115,7 @@ type DeleteFAQRequest struct {
 
 func (x *DeleteFAQRequest) Reset() {
 	*x = DeleteFAQRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[47]
+	mi := &file_content_v1_content_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3847,7 +4127,7 @@ func (x *DeleteFAQRequest) String() string {
 func (*DeleteFAQRequest) ProtoMessage() {}
 
 func (x *DeleteFAQRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[47]
+	mi := &file_content_v1_content_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3860,7 +4140,7 @@ func (x *DeleteFAQRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteFAQRequest.ProtoReflect.Descriptor instead.
 func (*DeleteFAQRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{47}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *DeleteFAQRequest) GetId() string {
@@ -3896,7 +4176,7 @@ type TestimonialData struct {
 
 func (x *TestimonialData) Reset() {
 	*x = TestimonialData{}
-	mi := &file_content_v1_content_proto_msgTypes[48]
+	mi := &file_content_v1_content_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3908,7 +4188,7 @@ func (x *TestimonialData) String() string {
 func (*TestimonialData) ProtoMessage() {}
 
 func (x *TestimonialData) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[48]
+	mi := &file_content_v1_content_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3921,7 +4201,7 @@ func (x *TestimonialData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestimonialData.ProtoReflect.Descriptor instead.
 func (*TestimonialData) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{48}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *TestimonialData) GetId() string {
@@ -4012,7 +4292,7 @@ type ListTestimonialsRequest struct {
 
 func (x *ListTestimonialsRequest) Reset() {
 	*x = ListTestimonialsRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[49]
+	mi := &file_content_v1_content_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4024,7 +4304,7 @@ func (x *ListTestimonialsRequest) String() string {
 func (*ListTestimonialsRequest) ProtoMessage() {}
 
 func (x *ListTestimonialsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[49]
+	mi := &file_content_v1_content_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4037,7 +4317,7 @@ func (x *ListTestimonialsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTestimonialsRequest.ProtoReflect.Descriptor instead.
 func (*ListTestimonialsRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{49}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *ListTestimonialsRequest) GetAppId() string {
@@ -4073,7 +4353,7 @@ type ListTestimonialsResponse struct {
 
 func (x *ListTestimonialsResponse) Reset() {
 	*x = ListTestimonialsResponse{}
-	mi := &file_content_v1_content_proto_msgTypes[50]
+	mi := &file_content_v1_content_proto_msgTypes[52]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4085,7 +4365,7 @@ func (x *ListTestimonialsResponse) String() string {
 func (*ListTestimonialsResponse) ProtoMessage() {}
 
 func (x *ListTestimonialsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[50]
+	mi := &file_content_v1_content_proto_msgTypes[52]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4098,7 +4378,7 @@ func (x *ListTestimonialsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTestimonialsResponse.ProtoReflect.Descriptor instead.
 func (*ListTestimonialsResponse) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{50}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *ListTestimonialsResponse) GetMessage() string {
@@ -4145,7 +4425,7 @@ type CreateTestimonialRequest struct {
 
 func (x *CreateTestimonialRequest) Reset() {
 	*x = CreateTestimonialRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[51]
+	mi := &file_content_v1_content_proto_msgTypes[53]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4157,7 +4437,7 @@ func (x *CreateTestimonialRequest) String() string {
 func (*CreateTestimonialRequest) ProtoMessage() {}
 
 func (x *CreateTestimonialRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[51]
+	mi := &file_content_v1_content_proto_msgTypes[53]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4170,7 +4450,7 @@ func (x *CreateTestimonialRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateTestimonialRequest.ProtoReflect.Descriptor instead.
 func (*CreateTestimonialRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{51}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *CreateTestimonialRequest) GetAppId() string {
@@ -4247,7 +4527,7 @@ type UpdateTestimonialRequest struct {
 
 func (x *UpdateTestimonialRequest) Reset() {
 	*x = UpdateTestimonialRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[52]
+	mi := &file_content_v1_content_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4259,7 +4539,7 @@ func (x *UpdateTestimonialRequest) String() string {
 func (*UpdateTestimonialRequest) ProtoMessage() {}
 
 func (x *UpdateTestimonialRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[52]
+	mi := &file_content_v1_content_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4272,7 +4552,7 @@ func (x *UpdateTestimonialRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateTestimonialRequest.ProtoReflect.Descriptor instead.
 func (*UpdateTestimonialRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{52}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *UpdateTestimonialRequest) GetId() string {
@@ -4356,7 +4636,7 @@ type TestimonialResponse struct {
 
 func (x *TestimonialResponse) Reset() {
 	*x = TestimonialResponse{}
-	mi := &file_content_v1_content_proto_msgTypes[53]
+	mi := &file_content_v1_content_proto_msgTypes[55]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4368,7 +4648,7 @@ func (x *TestimonialResponse) String() string {
 func (*TestimonialResponse) ProtoMessage() {}
 
 func (x *TestimonialResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[53]
+	mi := &file_content_v1_content_proto_msgTypes[55]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4381,7 +4661,7 @@ func (x *TestimonialResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestimonialResponse.ProtoReflect.Descriptor instead.
 func (*TestimonialResponse) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{53}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{55}
 }
 
 func (x *TestimonialResponse) GetMessage() string {
@@ -4415,7 +4695,7 @@ type DeleteTestimonialRequest struct {
 
 func (x *DeleteTestimonialRequest) Reset() {
 	*x = DeleteTestimonialRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[54]
+	mi := &file_content_v1_content_proto_msgTypes[56]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4427,7 +4707,7 @@ func (x *DeleteTestimonialRequest) String() string {
 func (*DeleteTestimonialRequest) ProtoMessage() {}
 
 func (x *DeleteTestimonialRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[54]
+	mi := &file_content_v1_content_proto_msgTypes[56]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4440,7 +4720,7 @@ func (x *DeleteTestimonialRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteTestimonialRequest.ProtoReflect.Descriptor instead.
 func (*DeleteTestimonialRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{54}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{56}
 }
 
 func (x *DeleteTestimonialRequest) GetId() string {
@@ -4469,7 +4749,7 @@ type UploadMediaRequest struct {
 
 func (x *UploadMediaRequest) Reset() {
 	*x = UploadMediaRequest{}
-	mi := &file_content_v1_content_proto_msgTypes[55]
+	mi := &file_content_v1_content_proto_msgTypes[57]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4481,7 +4761,7 @@ func (x *UploadMediaRequest) String() string {
 func (*UploadMediaRequest) ProtoMessage() {}
 
 func (x *UploadMediaRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[55]
+	mi := &file_content_v1_content_proto_msgTypes[57]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4494,7 +4774,7 @@ func (x *UploadMediaRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UploadMediaRequest.ProtoReflect.Descriptor instead.
 func (*UploadMediaRequest) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{55}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{57}
 }
 
 func (x *UploadMediaRequest) GetFilename() string {
@@ -4538,7 +4818,7 @@ type MediaUploadData struct {
 
 func (x *MediaUploadData) Reset() {
 	*x = MediaUploadData{}
-	mi := &file_content_v1_content_proto_msgTypes[56]
+	mi := &file_content_v1_content_proto_msgTypes[58]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4550,7 +4830,7 @@ func (x *MediaUploadData) String() string {
 func (*MediaUploadData) ProtoMessage() {}
 
 func (x *MediaUploadData) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[56]
+	mi := &file_content_v1_content_proto_msgTypes[58]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4563,7 +4843,7 @@ func (x *MediaUploadData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MediaUploadData.ProtoReflect.Descriptor instead.
 func (*MediaUploadData) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{56}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *MediaUploadData) GetFileUrl() string {
@@ -4612,7 +4892,7 @@ type UploadMediaResponse struct {
 
 func (x *UploadMediaResponse) Reset() {
 	*x = UploadMediaResponse{}
-	mi := &file_content_v1_content_proto_msgTypes[57]
+	mi := &file_content_v1_content_proto_msgTypes[59]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4624,7 +4904,7 @@ func (x *UploadMediaResponse) String() string {
 func (*UploadMediaResponse) ProtoMessage() {}
 
 func (x *UploadMediaResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_content_v1_content_proto_msgTypes[57]
+	mi := &file_content_v1_content_proto_msgTypes[59]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4637,7 +4917,7 @@ func (x *UploadMediaResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UploadMediaResponse.ProtoReflect.Descriptor instead.
 func (*UploadMediaResponse) Descriptor() ([]byte, []int) {
-	return file_content_v1_content_proto_rawDescGZIP(), []int{57}
+	return file_content_v1_content_proto_rawDescGZIP(), []int{59}
 }
 
 func (x *UploadMediaResponse) GetMessage() string {
@@ -4775,13 +5055,26 @@ const file_content_v1_content_proto_rawDesc = "" +
 	"\tis_active\x18\x06 \x01(\bR\tis_active\x12\x1e\n" +
 	"\n" +
 	"created_at\x18\a \x01(\tR\n" +
-	"created_at\"3\n" +
+	"created_at\"{\n" +
 	"\x19ListBlogCategoriesRequest\x12\x16\n" +
-	"\x06app_id\x18\x01 \x01(\tR\x06app_id\"~\n" +
+	"\x06app_id\x18\x01 \x01(\tR\x06app_id\x12\x12\n" +
+	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x1a\n" +
+	"\bper_page\x18\x03 \x01(\x05R\bper_page\x12\x16\n" +
+	"\x06search\x18\x04 \x01(\tR\x06search\"\xba\x01\n" +
 	"\x1aListBlogCategoriesResponse\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage\x12\x14\n" +
 	"\x05error\x18\x02 \x01(\tR\x05error\x120\n" +
-	"\x04data\x18\x03 \x03(\v2\x1c.content.v1.BlogCategoryDataR\x04data\"}\n" +
+	"\x04data\x18\x03 \x03(\v2\x1c.content.v1.BlogCategoryDataR\x04data\x12:\n" +
+	"\n" +
+	"pagination\x18\x04 \x01(\v2\x1a.content.v1.PaginationMetaR\n" +
+	"pagination\"\xab\x01\n" +
+	"\x19UpdateBlogCategoryRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
+	"\x06app_id\x18\x02 \x01(\tR\x06app_id\x12\x12\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\x12\x12\n" +
+	"\x04slug\x18\x04 \x01(\tR\x04slug\x12 \n" +
+	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\x1c\n" +
+	"\tis_active\x18\x06 \x01(\bR\tis_active\"}\n" +
 	"\x19CreateBlogCategoryRequest\x12\x16\n" +
 	"\x06app_id\x18\x01 \x01(\tR\x06app_id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
@@ -4936,7 +5229,16 @@ const file_content_v1_content_proto_rawDesc = "" +
 	"\x04slug\x18\x03 \x01(\tR\x04slug\x12 \n" +
 	"\vdescription\x18\x04 \x01(\tR\vdescription\x12\x1a\n" +
 	"\bcategory\x18\x05 \x01(\tR\bcategory\x12\x1c\n" +
-	"\tcover_url\x18\x06 \x01(\tR\tcover_url\">\n" +
+	"\tcover_url\x18\x06 \x01(\tR\tcover_url\"\xe2\x01\n" +
+	"\x14UpdateGalleryRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
+	"\x06app_id\x18\x02 \x01(\tR\x06app_id\x12\x14\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x12\x12\n" +
+	"\x04slug\x18\x04 \x01(\tR\x04slug\x12 \n" +
+	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\x1a\n" +
+	"\bcategory\x18\x06 \x01(\tR\bcategory\x12\x1c\n" +
+	"\tcover_url\x18\a \x01(\tR\tcover_url\x12\x1c\n" +
+	"\tis_active\x18\b \x01(\bR\tis_active\">\n" +
 	"\x14DeleteGalleryRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
 	"\x06app_id\x18\x02 \x01(\tR\x06app_id\"\x8b\x02\n" +
@@ -4972,14 +5274,20 @@ const file_content_v1_content_proto_rawDesc = "" +
 	"\bmetadata\x18\t \x01(\tR\bmetadata\x12&\n" +
 	"\x0esequence_order\x18\n" +
 	" \x01(\x05R\x0esequence_order\x12\x1c\n" +
-	"\tis_active\x18\v \x01(\bR\tis_active\"U\n" +
+	"\tis_active\x18\v \x01(\bR\tis_active\"\x9d\x01\n" +
 	"\x17ListCustomBlocksRequest\x12\x16\n" +
 	"\x06app_id\x18\x01 \x01(\tR\x06app_id\x12\"\n" +
-	"\fcontent_type\x18\x02 \x01(\tR\fcontent_type\"{\n" +
+	"\fcontent_type\x18\x02 \x01(\tR\fcontent_type\x12\x12\n" +
+	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x1a\n" +
+	"\bper_page\x18\x04 \x01(\x05R\bper_page\x12\x16\n" +
+	"\x06search\x18\x05 \x01(\tR\x06search\"\xb7\x01\n" +
 	"\x18ListCustomBlocksResponse\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage\x12\x14\n" +
 	"\x05error\x18\x02 \x01(\tR\x05error\x12/\n" +
-	"\x04data\x18\x03 \x03(\v2\x1b.content.v1.CustomBlockDataR\x04data\"Q\n" +
+	"\x04data\x18\x03 \x03(\v2\x1b.content.v1.CustomBlockDataR\x04data\x12:\n" +
+	"\n" +
+	"pagination\x18\x04 \x01(\v2\x1a.content.v1.PaginationMetaR\n" +
+	"pagination\"Q\n" +
 	"\x15GetCustomBlockRequest\x12 \n" +
 	"\vsection_key\x18\x01 \x01(\tR\vsection_key\x12\x16\n" +
 	"\x06app_id\x18\x02 \x01(\tR\x06app_id\"v\n" +
@@ -5009,14 +5317,20 @@ const file_content_v1_content_proto_rawDesc = "" +
 	"\bquestion\x18\x04 \x01(\tR\bquestion\x12\x16\n" +
 	"\x06answer\x18\x05 \x01(\tR\x06answer\x12&\n" +
 	"\x0esequence_order\x18\x06 \x01(\x05R\x0esequence_order\x12\x1c\n" +
-	"\tis_active\x18\a \x01(\bR\tis_active\"E\n" +
+	"\tis_active\x18\a \x01(\bR\tis_active\"\x8d\x01\n" +
 	"\x0fListFAQsRequest\x12\x16\n" +
 	"\x06app_id\x18\x01 \x01(\tR\x06app_id\x12\x1a\n" +
-	"\bcategory\x18\x02 \x01(\tR\bcategory\"k\n" +
+	"\bcategory\x18\x02 \x01(\tR\bcategory\x12\x12\n" +
+	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x1a\n" +
+	"\bper_page\x18\x04 \x01(\x05R\bper_page\x12\x16\n" +
+	"\x06search\x18\x05 \x01(\tR\x06search\"\xa7\x01\n" +
 	"\x10ListFAQsResponse\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage\x12\x14\n" +
 	"\x05error\x18\x02 \x01(\tR\x05error\x12'\n" +
-	"\x04data\x18\x03 \x03(\v2\x13.content.v1.FAQDataR\x04data\"\xa2\x01\n" +
+	"\x04data\x18\x03 \x03(\v2\x13.content.v1.FAQDataR\x04data\x12:\n" +
+	"\n" +
+	"pagination\x18\x04 \x01(\v2\x1a.content.v1.PaginationMetaR\n" +
+	"pagination\"\xa2\x01\n" +
 	"\x10CreateFAQRequest\x12\x16\n" +
 	"\x06app_id\x18\x01 \x01(\tR\x06app_id\x12\x1a\n" +
 	"\bcategory\x18\x02 \x01(\tR\bcategory\x12\x1a\n" +
@@ -5112,7 +5426,7 @@ const file_content_v1_content_proto_rawDesc = "" +
 	"\x13UploadMediaResponse\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage\x12\x14\n" +
 	"\x05error\x18\x02 \x01(\tR\x05error\x12/\n" +
-	"\x04data\x18\x03 \x01(\v2\x1b.content.v1.MediaUploadDataR\x04data2\xe3\x13\n" +
+	"\x04data\x18\x03 \x01(\v2\x1b.content.v1.MediaUploadDataR\x04data2\x92\x15\n" +
 	"\x0eContentService\x12N\n" +
 	"\vListBanners\x12\x1e.content.v1.ListBannersRequest\x1a\x1f.content.v1.ListBannersResponse\x12E\n" +
 	"\tGetBanner\x12\x1c.content.v1.GetBannerRequest\x1a\x1a.content.v1.BannerResponse\x12K\n" +
@@ -5120,7 +5434,8 @@ const file_content_v1_content_proto_rawDesc = "" +
 	"\fUpdateBanner\x12\x1f.content.v1.UpdateBannerRequest\x1a\x1a.content.v1.BannerResponse\x12L\n" +
 	"\fDeleteBanner\x12\x1f.content.v1.DeleteBannerRequest\x1a\x1b.content.v1.MessageResponse\x12c\n" +
 	"\x12ListBlogCategories\x12%.content.v1.ListBlogCategoriesRequest\x1a&.content.v1.ListBlogCategoriesResponse\x12]\n" +
-	"\x12CreateBlogCategory\x12%.content.v1.CreateBlogCategoryRequest\x1a .content.v1.BlogCategoryResponse\x12H\n" +
+	"\x12CreateBlogCategory\x12%.content.v1.CreateBlogCategoryRequest\x1a .content.v1.BlogCategoryResponse\x12]\n" +
+	"\x12UpdateBlogCategory\x12%.content.v1.UpdateBlogCategoryRequest\x1a .content.v1.BlogCategoryResponse\x12H\n" +
 	"\tListBlogs\x12\x1c.content.v1.ListBlogsRequest\x1a\x1d.content.v1.ListBlogsResponse\x12?\n" +
 	"\aGetBlog\x12\x1a.content.v1.GetBlogRequest\x1a\x18.content.v1.BlogResponse\x12E\n" +
 	"\n" +
@@ -5133,6 +5448,7 @@ const file_content_v1_content_proto_rawDesc = "" +
 	"\n" +
 	"GetGallery\x12\x1d.content.v1.GetGalleryRequest\x1a\x1b.content.v1.GalleryResponse\x12N\n" +
 	"\rCreateGallery\x12 .content.v1.CreateGalleryRequest\x1a\x1b.content.v1.GalleryResponse\x12N\n" +
+	"\rUpdateGallery\x12 .content.v1.UpdateGalleryRequest\x1a\x1b.content.v1.GalleryResponse\x12N\n" +
 	"\rDeleteGallery\x12 .content.v1.DeleteGalleryRequest\x1a\x1b.content.v1.MessageResponse\x12T\n" +
 	"\x0eAddGalleryItem\x12!.content.v1.AddGalleryItemRequest\x1a\x1f.content.v1.GalleryItemResponse\x12V\n" +
 	"\x11DeleteGalleryItem\x12$.content.v1.DeleteGalleryItemRequest\x1a\x1b.content.v1.MessageResponse\x12]\n" +
@@ -5162,7 +5478,7 @@ func file_content_v1_content_proto_rawDescGZIP() []byte {
 	return file_content_v1_content_proto_rawDescData
 }
 
-var file_content_v1_content_proto_msgTypes = make([]protoimpl.MessageInfo, 58)
+var file_content_v1_content_proto_msgTypes = make([]protoimpl.MessageInfo, 60)
 var file_content_v1_content_proto_goTypes = []any{
 	(*PaginationMeta)(nil),             // 0: content.v1.PaginationMeta
 	(*MessageResponse)(nil),            // 1: content.v1.MessageResponse
@@ -5177,141 +5493,150 @@ var file_content_v1_content_proto_goTypes = []any{
 	(*BlogCategoryData)(nil),           // 10: content.v1.BlogCategoryData
 	(*ListBlogCategoriesRequest)(nil),  // 11: content.v1.ListBlogCategoriesRequest
 	(*ListBlogCategoriesResponse)(nil), // 12: content.v1.ListBlogCategoriesResponse
-	(*CreateBlogCategoryRequest)(nil),  // 13: content.v1.CreateBlogCategoryRequest
-	(*BlogCategoryResponse)(nil),       // 14: content.v1.BlogCategoryResponse
-	(*BlogData)(nil),                   // 15: content.v1.BlogData
-	(*ListBlogsRequest)(nil),           // 16: content.v1.ListBlogsRequest
-	(*ListBlogsResponse)(nil),          // 17: content.v1.ListBlogsResponse
-	(*GetBlogRequest)(nil),             // 18: content.v1.GetBlogRequest
-	(*BlogResponse)(nil),               // 19: content.v1.BlogResponse
-	(*CreateBlogRequest)(nil),          // 20: content.v1.CreateBlogRequest
-	(*UpdateBlogRequest)(nil),          // 21: content.v1.UpdateBlogRequest
-	(*DeleteBlogRequest)(nil),          // 22: content.v1.DeleteBlogRequest
-	(*GalleryItemData)(nil),            // 23: content.v1.GalleryItemData
-	(*GalleryData)(nil),                // 24: content.v1.GalleryData
-	(*ListGalleriesRequest)(nil),       // 25: content.v1.ListGalleriesRequest
-	(*ListGalleriesResponse)(nil),      // 26: content.v1.ListGalleriesResponse
-	(*GetGalleryRequest)(nil),          // 27: content.v1.GetGalleryRequest
-	(*GalleryResponse)(nil),            // 28: content.v1.GalleryResponse
-	(*CreateGalleryRequest)(nil),       // 29: content.v1.CreateGalleryRequest
-	(*DeleteGalleryRequest)(nil),       // 30: content.v1.DeleteGalleryRequest
-	(*AddGalleryItemRequest)(nil),      // 31: content.v1.AddGalleryItemRequest
-	(*GalleryItemResponse)(nil),        // 32: content.v1.GalleryItemResponse
-	(*DeleteGalleryItemRequest)(nil),   // 33: content.v1.DeleteGalleryItemRequest
-	(*CustomBlockData)(nil),            // 34: content.v1.CustomBlockData
-	(*ListCustomBlocksRequest)(nil),    // 35: content.v1.ListCustomBlocksRequest
-	(*ListCustomBlocksResponse)(nil),   // 36: content.v1.ListCustomBlocksResponse
-	(*GetCustomBlockRequest)(nil),      // 37: content.v1.GetCustomBlockRequest
-	(*CustomBlockResponse)(nil),        // 38: content.v1.CustomBlockResponse
-	(*UpsertCustomBlockRequest)(nil),   // 39: content.v1.UpsertCustomBlockRequest
-	(*DeleteCustomBlockRequest)(nil),   // 40: content.v1.DeleteCustomBlockRequest
-	(*FAQData)(nil),                    // 41: content.v1.FAQData
-	(*ListFAQsRequest)(nil),            // 42: content.v1.ListFAQsRequest
-	(*ListFAQsResponse)(nil),           // 43: content.v1.ListFAQsResponse
-	(*CreateFAQRequest)(nil),           // 44: content.v1.CreateFAQRequest
-	(*UpdateFAQRequest)(nil),           // 45: content.v1.UpdateFAQRequest
-	(*FAQResponse)(nil),                // 46: content.v1.FAQResponse
-	(*DeleteFAQRequest)(nil),           // 47: content.v1.DeleteFAQRequest
-	(*TestimonialData)(nil),            // 48: content.v1.TestimonialData
-	(*ListTestimonialsRequest)(nil),    // 49: content.v1.ListTestimonialsRequest
-	(*ListTestimonialsResponse)(nil),   // 50: content.v1.ListTestimonialsResponse
-	(*CreateTestimonialRequest)(nil),   // 51: content.v1.CreateTestimonialRequest
-	(*UpdateTestimonialRequest)(nil),   // 52: content.v1.UpdateTestimonialRequest
-	(*TestimonialResponse)(nil),        // 53: content.v1.TestimonialResponse
-	(*DeleteTestimonialRequest)(nil),   // 54: content.v1.DeleteTestimonialRequest
-	(*UploadMediaRequest)(nil),         // 55: content.v1.UploadMediaRequest
-	(*MediaUploadData)(nil),            // 56: content.v1.MediaUploadData
-	(*UploadMediaResponse)(nil),        // 57: content.v1.UploadMediaResponse
+	(*UpdateBlogCategoryRequest)(nil),  // 13: content.v1.UpdateBlogCategoryRequest
+	(*CreateBlogCategoryRequest)(nil),  // 14: content.v1.CreateBlogCategoryRequest
+	(*BlogCategoryResponse)(nil),       // 15: content.v1.BlogCategoryResponse
+	(*BlogData)(nil),                   // 16: content.v1.BlogData
+	(*ListBlogsRequest)(nil),           // 17: content.v1.ListBlogsRequest
+	(*ListBlogsResponse)(nil),          // 18: content.v1.ListBlogsResponse
+	(*GetBlogRequest)(nil),             // 19: content.v1.GetBlogRequest
+	(*BlogResponse)(nil),               // 20: content.v1.BlogResponse
+	(*CreateBlogRequest)(nil),          // 21: content.v1.CreateBlogRequest
+	(*UpdateBlogRequest)(nil),          // 22: content.v1.UpdateBlogRequest
+	(*DeleteBlogRequest)(nil),          // 23: content.v1.DeleteBlogRequest
+	(*GalleryItemData)(nil),            // 24: content.v1.GalleryItemData
+	(*GalleryData)(nil),                // 25: content.v1.GalleryData
+	(*ListGalleriesRequest)(nil),       // 26: content.v1.ListGalleriesRequest
+	(*ListGalleriesResponse)(nil),      // 27: content.v1.ListGalleriesResponse
+	(*GetGalleryRequest)(nil),          // 28: content.v1.GetGalleryRequest
+	(*GalleryResponse)(nil),            // 29: content.v1.GalleryResponse
+	(*CreateGalleryRequest)(nil),       // 30: content.v1.CreateGalleryRequest
+	(*UpdateGalleryRequest)(nil),       // 31: content.v1.UpdateGalleryRequest
+	(*DeleteGalleryRequest)(nil),       // 32: content.v1.DeleteGalleryRequest
+	(*AddGalleryItemRequest)(nil),      // 33: content.v1.AddGalleryItemRequest
+	(*GalleryItemResponse)(nil),        // 34: content.v1.GalleryItemResponse
+	(*DeleteGalleryItemRequest)(nil),   // 35: content.v1.DeleteGalleryItemRequest
+	(*CustomBlockData)(nil),            // 36: content.v1.CustomBlockData
+	(*ListCustomBlocksRequest)(nil),    // 37: content.v1.ListCustomBlocksRequest
+	(*ListCustomBlocksResponse)(nil),   // 38: content.v1.ListCustomBlocksResponse
+	(*GetCustomBlockRequest)(nil),      // 39: content.v1.GetCustomBlockRequest
+	(*CustomBlockResponse)(nil),        // 40: content.v1.CustomBlockResponse
+	(*UpsertCustomBlockRequest)(nil),   // 41: content.v1.UpsertCustomBlockRequest
+	(*DeleteCustomBlockRequest)(nil),   // 42: content.v1.DeleteCustomBlockRequest
+	(*FAQData)(nil),                    // 43: content.v1.FAQData
+	(*ListFAQsRequest)(nil),            // 44: content.v1.ListFAQsRequest
+	(*ListFAQsResponse)(nil),           // 45: content.v1.ListFAQsResponse
+	(*CreateFAQRequest)(nil),           // 46: content.v1.CreateFAQRequest
+	(*UpdateFAQRequest)(nil),           // 47: content.v1.UpdateFAQRequest
+	(*FAQResponse)(nil),                // 48: content.v1.FAQResponse
+	(*DeleteFAQRequest)(nil),           // 49: content.v1.DeleteFAQRequest
+	(*TestimonialData)(nil),            // 50: content.v1.TestimonialData
+	(*ListTestimonialsRequest)(nil),    // 51: content.v1.ListTestimonialsRequest
+	(*ListTestimonialsResponse)(nil),   // 52: content.v1.ListTestimonialsResponse
+	(*CreateTestimonialRequest)(nil),   // 53: content.v1.CreateTestimonialRequest
+	(*UpdateTestimonialRequest)(nil),   // 54: content.v1.UpdateTestimonialRequest
+	(*TestimonialResponse)(nil),        // 55: content.v1.TestimonialResponse
+	(*DeleteTestimonialRequest)(nil),   // 56: content.v1.DeleteTestimonialRequest
+	(*UploadMediaRequest)(nil),         // 57: content.v1.UploadMediaRequest
+	(*MediaUploadData)(nil),            // 58: content.v1.MediaUploadData
+	(*UploadMediaResponse)(nil),        // 59: content.v1.UploadMediaResponse
 }
 var file_content_v1_content_proto_depIdxs = []int32{
 	2,  // 0: content.v1.ListBannersResponse.data:type_name -> content.v1.BannerData
 	0,  // 1: content.v1.ListBannersResponse.pagination:type_name -> content.v1.PaginationMeta
 	2,  // 2: content.v1.BannerResponse.data:type_name -> content.v1.BannerData
 	10, // 3: content.v1.ListBlogCategoriesResponse.data:type_name -> content.v1.BlogCategoryData
-	10, // 4: content.v1.BlogCategoryResponse.data:type_name -> content.v1.BlogCategoryData
-	15, // 5: content.v1.ListBlogsResponse.data:type_name -> content.v1.BlogData
-	0,  // 6: content.v1.ListBlogsResponse.pagination:type_name -> content.v1.PaginationMeta
-	15, // 7: content.v1.BlogResponse.data:type_name -> content.v1.BlogData
-	23, // 8: content.v1.GalleryData.items:type_name -> content.v1.GalleryItemData
-	24, // 9: content.v1.ListGalleriesResponse.data:type_name -> content.v1.GalleryData
-	0,  // 10: content.v1.ListGalleriesResponse.pagination:type_name -> content.v1.PaginationMeta
-	24, // 11: content.v1.GalleryResponse.data:type_name -> content.v1.GalleryData
-	23, // 12: content.v1.GalleryItemResponse.data:type_name -> content.v1.GalleryItemData
-	34, // 13: content.v1.ListCustomBlocksResponse.data:type_name -> content.v1.CustomBlockData
-	34, // 14: content.v1.CustomBlockResponse.data:type_name -> content.v1.CustomBlockData
-	41, // 15: content.v1.ListFAQsResponse.data:type_name -> content.v1.FAQData
-	41, // 16: content.v1.FAQResponse.data:type_name -> content.v1.FAQData
-	48, // 17: content.v1.ListTestimonialsResponse.data:type_name -> content.v1.TestimonialData
-	0,  // 18: content.v1.ListTestimonialsResponse.pagination:type_name -> content.v1.PaginationMeta
-	48, // 19: content.v1.TestimonialResponse.data:type_name -> content.v1.TestimonialData
-	56, // 20: content.v1.UploadMediaResponse.data:type_name -> content.v1.MediaUploadData
-	3,  // 21: content.v1.ContentService.ListBanners:input_type -> content.v1.ListBannersRequest
-	5,  // 22: content.v1.ContentService.GetBanner:input_type -> content.v1.GetBannerRequest
-	7,  // 23: content.v1.ContentService.CreateBanner:input_type -> content.v1.CreateBannerRequest
-	8,  // 24: content.v1.ContentService.UpdateBanner:input_type -> content.v1.UpdateBannerRequest
-	9,  // 25: content.v1.ContentService.DeleteBanner:input_type -> content.v1.DeleteBannerRequest
-	11, // 26: content.v1.ContentService.ListBlogCategories:input_type -> content.v1.ListBlogCategoriesRequest
-	13, // 27: content.v1.ContentService.CreateBlogCategory:input_type -> content.v1.CreateBlogCategoryRequest
-	16, // 28: content.v1.ContentService.ListBlogs:input_type -> content.v1.ListBlogsRequest
-	18, // 29: content.v1.ContentService.GetBlog:input_type -> content.v1.GetBlogRequest
-	20, // 30: content.v1.ContentService.CreateBlog:input_type -> content.v1.CreateBlogRequest
-	21, // 31: content.v1.ContentService.UpdateBlog:input_type -> content.v1.UpdateBlogRequest
-	22, // 32: content.v1.ContentService.DeleteBlog:input_type -> content.v1.DeleteBlogRequest
-	25, // 33: content.v1.ContentService.ListGalleries:input_type -> content.v1.ListGalleriesRequest
-	27, // 34: content.v1.ContentService.GetGallery:input_type -> content.v1.GetGalleryRequest
-	29, // 35: content.v1.ContentService.CreateGallery:input_type -> content.v1.CreateGalleryRequest
-	30, // 36: content.v1.ContentService.DeleteGallery:input_type -> content.v1.DeleteGalleryRequest
-	31, // 37: content.v1.ContentService.AddGalleryItem:input_type -> content.v1.AddGalleryItemRequest
-	33, // 38: content.v1.ContentService.DeleteGalleryItem:input_type -> content.v1.DeleteGalleryItemRequest
-	35, // 39: content.v1.ContentService.ListCustomBlocks:input_type -> content.v1.ListCustomBlocksRequest
-	37, // 40: content.v1.ContentService.GetCustomBlock:input_type -> content.v1.GetCustomBlockRequest
-	39, // 41: content.v1.ContentService.UpsertCustomBlock:input_type -> content.v1.UpsertCustomBlockRequest
-	40, // 42: content.v1.ContentService.DeleteCustomBlock:input_type -> content.v1.DeleteCustomBlockRequest
-	42, // 43: content.v1.ContentService.ListFAQs:input_type -> content.v1.ListFAQsRequest
-	44, // 44: content.v1.ContentService.CreateFAQ:input_type -> content.v1.CreateFAQRequest
-	45, // 45: content.v1.ContentService.UpdateFAQ:input_type -> content.v1.UpdateFAQRequest
-	47, // 46: content.v1.ContentService.DeleteFAQ:input_type -> content.v1.DeleteFAQRequest
-	49, // 47: content.v1.ContentService.ListTestimonials:input_type -> content.v1.ListTestimonialsRequest
-	51, // 48: content.v1.ContentService.CreateTestimonial:input_type -> content.v1.CreateTestimonialRequest
-	52, // 49: content.v1.ContentService.UpdateTestimonial:input_type -> content.v1.UpdateTestimonialRequest
-	54, // 50: content.v1.ContentService.DeleteTestimonial:input_type -> content.v1.DeleteTestimonialRequest
-	55, // 51: content.v1.ContentService.UploadMedia:input_type -> content.v1.UploadMediaRequest
-	4,  // 52: content.v1.ContentService.ListBanners:output_type -> content.v1.ListBannersResponse
-	6,  // 53: content.v1.ContentService.GetBanner:output_type -> content.v1.BannerResponse
-	6,  // 54: content.v1.ContentService.CreateBanner:output_type -> content.v1.BannerResponse
-	6,  // 55: content.v1.ContentService.UpdateBanner:output_type -> content.v1.BannerResponse
-	1,  // 56: content.v1.ContentService.DeleteBanner:output_type -> content.v1.MessageResponse
-	12, // 57: content.v1.ContentService.ListBlogCategories:output_type -> content.v1.ListBlogCategoriesResponse
-	14, // 58: content.v1.ContentService.CreateBlogCategory:output_type -> content.v1.BlogCategoryResponse
-	17, // 59: content.v1.ContentService.ListBlogs:output_type -> content.v1.ListBlogsResponse
-	19, // 60: content.v1.ContentService.GetBlog:output_type -> content.v1.BlogResponse
-	19, // 61: content.v1.ContentService.CreateBlog:output_type -> content.v1.BlogResponse
-	19, // 62: content.v1.ContentService.UpdateBlog:output_type -> content.v1.BlogResponse
-	1,  // 63: content.v1.ContentService.DeleteBlog:output_type -> content.v1.MessageResponse
-	26, // 64: content.v1.ContentService.ListGalleries:output_type -> content.v1.ListGalleriesResponse
-	28, // 65: content.v1.ContentService.GetGallery:output_type -> content.v1.GalleryResponse
-	28, // 66: content.v1.ContentService.CreateGallery:output_type -> content.v1.GalleryResponse
-	1,  // 67: content.v1.ContentService.DeleteGallery:output_type -> content.v1.MessageResponse
-	32, // 68: content.v1.ContentService.AddGalleryItem:output_type -> content.v1.GalleryItemResponse
-	1,  // 69: content.v1.ContentService.DeleteGalleryItem:output_type -> content.v1.MessageResponse
-	36, // 70: content.v1.ContentService.ListCustomBlocks:output_type -> content.v1.ListCustomBlocksResponse
-	38, // 71: content.v1.ContentService.GetCustomBlock:output_type -> content.v1.CustomBlockResponse
-	38, // 72: content.v1.ContentService.UpsertCustomBlock:output_type -> content.v1.CustomBlockResponse
-	1,  // 73: content.v1.ContentService.DeleteCustomBlock:output_type -> content.v1.MessageResponse
-	43, // 74: content.v1.ContentService.ListFAQs:output_type -> content.v1.ListFAQsResponse
-	46, // 75: content.v1.ContentService.CreateFAQ:output_type -> content.v1.FAQResponse
-	46, // 76: content.v1.ContentService.UpdateFAQ:output_type -> content.v1.FAQResponse
-	1,  // 77: content.v1.ContentService.DeleteFAQ:output_type -> content.v1.MessageResponse
-	50, // 78: content.v1.ContentService.ListTestimonials:output_type -> content.v1.ListTestimonialsResponse
-	53, // 79: content.v1.ContentService.CreateTestimonial:output_type -> content.v1.TestimonialResponse
-	53, // 80: content.v1.ContentService.UpdateTestimonial:output_type -> content.v1.TestimonialResponse
-	1,  // 81: content.v1.ContentService.DeleteTestimonial:output_type -> content.v1.MessageResponse
-	57, // 82: content.v1.ContentService.UploadMedia:output_type -> content.v1.UploadMediaResponse
-	52, // [52:83] is the sub-list for method output_type
-	21, // [21:52] is the sub-list for method input_type
-	21, // [21:21] is the sub-list for extension type_name
-	21, // [21:21] is the sub-list for extension extendee
-	0,  // [0:21] is the sub-list for field type_name
+	0,  // 4: content.v1.ListBlogCategoriesResponse.pagination:type_name -> content.v1.PaginationMeta
+	10, // 5: content.v1.BlogCategoryResponse.data:type_name -> content.v1.BlogCategoryData
+	16, // 6: content.v1.ListBlogsResponse.data:type_name -> content.v1.BlogData
+	0,  // 7: content.v1.ListBlogsResponse.pagination:type_name -> content.v1.PaginationMeta
+	16, // 8: content.v1.BlogResponse.data:type_name -> content.v1.BlogData
+	24, // 9: content.v1.GalleryData.items:type_name -> content.v1.GalleryItemData
+	25, // 10: content.v1.ListGalleriesResponse.data:type_name -> content.v1.GalleryData
+	0,  // 11: content.v1.ListGalleriesResponse.pagination:type_name -> content.v1.PaginationMeta
+	25, // 12: content.v1.GalleryResponse.data:type_name -> content.v1.GalleryData
+	24, // 13: content.v1.GalleryItemResponse.data:type_name -> content.v1.GalleryItemData
+	36, // 14: content.v1.ListCustomBlocksResponse.data:type_name -> content.v1.CustomBlockData
+	0,  // 15: content.v1.ListCustomBlocksResponse.pagination:type_name -> content.v1.PaginationMeta
+	36, // 16: content.v1.CustomBlockResponse.data:type_name -> content.v1.CustomBlockData
+	43, // 17: content.v1.ListFAQsResponse.data:type_name -> content.v1.FAQData
+	0,  // 18: content.v1.ListFAQsResponse.pagination:type_name -> content.v1.PaginationMeta
+	43, // 19: content.v1.FAQResponse.data:type_name -> content.v1.FAQData
+	50, // 20: content.v1.ListTestimonialsResponse.data:type_name -> content.v1.TestimonialData
+	0,  // 21: content.v1.ListTestimonialsResponse.pagination:type_name -> content.v1.PaginationMeta
+	50, // 22: content.v1.TestimonialResponse.data:type_name -> content.v1.TestimonialData
+	58, // 23: content.v1.UploadMediaResponse.data:type_name -> content.v1.MediaUploadData
+	3,  // 24: content.v1.ContentService.ListBanners:input_type -> content.v1.ListBannersRequest
+	5,  // 25: content.v1.ContentService.GetBanner:input_type -> content.v1.GetBannerRequest
+	7,  // 26: content.v1.ContentService.CreateBanner:input_type -> content.v1.CreateBannerRequest
+	8,  // 27: content.v1.ContentService.UpdateBanner:input_type -> content.v1.UpdateBannerRequest
+	9,  // 28: content.v1.ContentService.DeleteBanner:input_type -> content.v1.DeleteBannerRequest
+	11, // 29: content.v1.ContentService.ListBlogCategories:input_type -> content.v1.ListBlogCategoriesRequest
+	14, // 30: content.v1.ContentService.CreateBlogCategory:input_type -> content.v1.CreateBlogCategoryRequest
+	13, // 31: content.v1.ContentService.UpdateBlogCategory:input_type -> content.v1.UpdateBlogCategoryRequest
+	17, // 32: content.v1.ContentService.ListBlogs:input_type -> content.v1.ListBlogsRequest
+	19, // 33: content.v1.ContentService.GetBlog:input_type -> content.v1.GetBlogRequest
+	21, // 34: content.v1.ContentService.CreateBlog:input_type -> content.v1.CreateBlogRequest
+	22, // 35: content.v1.ContentService.UpdateBlog:input_type -> content.v1.UpdateBlogRequest
+	23, // 36: content.v1.ContentService.DeleteBlog:input_type -> content.v1.DeleteBlogRequest
+	26, // 37: content.v1.ContentService.ListGalleries:input_type -> content.v1.ListGalleriesRequest
+	28, // 38: content.v1.ContentService.GetGallery:input_type -> content.v1.GetGalleryRequest
+	30, // 39: content.v1.ContentService.CreateGallery:input_type -> content.v1.CreateGalleryRequest
+	31, // 40: content.v1.ContentService.UpdateGallery:input_type -> content.v1.UpdateGalleryRequest
+	32, // 41: content.v1.ContentService.DeleteGallery:input_type -> content.v1.DeleteGalleryRequest
+	33, // 42: content.v1.ContentService.AddGalleryItem:input_type -> content.v1.AddGalleryItemRequest
+	35, // 43: content.v1.ContentService.DeleteGalleryItem:input_type -> content.v1.DeleteGalleryItemRequest
+	37, // 44: content.v1.ContentService.ListCustomBlocks:input_type -> content.v1.ListCustomBlocksRequest
+	39, // 45: content.v1.ContentService.GetCustomBlock:input_type -> content.v1.GetCustomBlockRequest
+	41, // 46: content.v1.ContentService.UpsertCustomBlock:input_type -> content.v1.UpsertCustomBlockRequest
+	42, // 47: content.v1.ContentService.DeleteCustomBlock:input_type -> content.v1.DeleteCustomBlockRequest
+	44, // 48: content.v1.ContentService.ListFAQs:input_type -> content.v1.ListFAQsRequest
+	46, // 49: content.v1.ContentService.CreateFAQ:input_type -> content.v1.CreateFAQRequest
+	47, // 50: content.v1.ContentService.UpdateFAQ:input_type -> content.v1.UpdateFAQRequest
+	49, // 51: content.v1.ContentService.DeleteFAQ:input_type -> content.v1.DeleteFAQRequest
+	51, // 52: content.v1.ContentService.ListTestimonials:input_type -> content.v1.ListTestimonialsRequest
+	53, // 53: content.v1.ContentService.CreateTestimonial:input_type -> content.v1.CreateTestimonialRequest
+	54, // 54: content.v1.ContentService.UpdateTestimonial:input_type -> content.v1.UpdateTestimonialRequest
+	56, // 55: content.v1.ContentService.DeleteTestimonial:input_type -> content.v1.DeleteTestimonialRequest
+	57, // 56: content.v1.ContentService.UploadMedia:input_type -> content.v1.UploadMediaRequest
+	4,  // 57: content.v1.ContentService.ListBanners:output_type -> content.v1.ListBannersResponse
+	6,  // 58: content.v1.ContentService.GetBanner:output_type -> content.v1.BannerResponse
+	6,  // 59: content.v1.ContentService.CreateBanner:output_type -> content.v1.BannerResponse
+	6,  // 60: content.v1.ContentService.UpdateBanner:output_type -> content.v1.BannerResponse
+	1,  // 61: content.v1.ContentService.DeleteBanner:output_type -> content.v1.MessageResponse
+	12, // 62: content.v1.ContentService.ListBlogCategories:output_type -> content.v1.ListBlogCategoriesResponse
+	15, // 63: content.v1.ContentService.CreateBlogCategory:output_type -> content.v1.BlogCategoryResponse
+	15, // 64: content.v1.ContentService.UpdateBlogCategory:output_type -> content.v1.BlogCategoryResponse
+	18, // 65: content.v1.ContentService.ListBlogs:output_type -> content.v1.ListBlogsResponse
+	20, // 66: content.v1.ContentService.GetBlog:output_type -> content.v1.BlogResponse
+	20, // 67: content.v1.ContentService.CreateBlog:output_type -> content.v1.BlogResponse
+	20, // 68: content.v1.ContentService.UpdateBlog:output_type -> content.v1.BlogResponse
+	1,  // 69: content.v1.ContentService.DeleteBlog:output_type -> content.v1.MessageResponse
+	27, // 70: content.v1.ContentService.ListGalleries:output_type -> content.v1.ListGalleriesResponse
+	29, // 71: content.v1.ContentService.GetGallery:output_type -> content.v1.GalleryResponse
+	29, // 72: content.v1.ContentService.CreateGallery:output_type -> content.v1.GalleryResponse
+	29, // 73: content.v1.ContentService.UpdateGallery:output_type -> content.v1.GalleryResponse
+	1,  // 74: content.v1.ContentService.DeleteGallery:output_type -> content.v1.MessageResponse
+	34, // 75: content.v1.ContentService.AddGalleryItem:output_type -> content.v1.GalleryItemResponse
+	1,  // 76: content.v1.ContentService.DeleteGalleryItem:output_type -> content.v1.MessageResponse
+	38, // 77: content.v1.ContentService.ListCustomBlocks:output_type -> content.v1.ListCustomBlocksResponse
+	40, // 78: content.v1.ContentService.GetCustomBlock:output_type -> content.v1.CustomBlockResponse
+	40, // 79: content.v1.ContentService.UpsertCustomBlock:output_type -> content.v1.CustomBlockResponse
+	1,  // 80: content.v1.ContentService.DeleteCustomBlock:output_type -> content.v1.MessageResponse
+	45, // 81: content.v1.ContentService.ListFAQs:output_type -> content.v1.ListFAQsResponse
+	48, // 82: content.v1.ContentService.CreateFAQ:output_type -> content.v1.FAQResponse
+	48, // 83: content.v1.ContentService.UpdateFAQ:output_type -> content.v1.FAQResponse
+	1,  // 84: content.v1.ContentService.DeleteFAQ:output_type -> content.v1.MessageResponse
+	52, // 85: content.v1.ContentService.ListTestimonials:output_type -> content.v1.ListTestimonialsResponse
+	55, // 86: content.v1.ContentService.CreateTestimonial:output_type -> content.v1.TestimonialResponse
+	55, // 87: content.v1.ContentService.UpdateTestimonial:output_type -> content.v1.TestimonialResponse
+	1,  // 88: content.v1.ContentService.DeleteTestimonial:output_type -> content.v1.MessageResponse
+	59, // 89: content.v1.ContentService.UploadMedia:output_type -> content.v1.UploadMediaResponse
+	57, // [57:90] is the sub-list for method output_type
+	24, // [24:57] is the sub-list for method input_type
+	24, // [24:24] is the sub-list for extension type_name
+	24, // [24:24] is the sub-list for extension extendee
+	0,  // [0:24] is the sub-list for field type_name
 }
 
 func init() { file_content_v1_content_proto_init() }
@@ -5325,7 +5650,7 @@ func file_content_v1_content_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_content_v1_content_proto_rawDesc), len(file_content_v1_content_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   58,
+			NumMessages:   60,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

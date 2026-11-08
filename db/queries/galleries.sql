@@ -34,6 +34,19 @@ INSERT INTO content_galleries (
 )
 RETURNING *;
 
+-- name: UpdateGallery :one
+UPDATE content_galleries
+SET
+    title = $3,
+    slug = $4,
+    description = $5,
+    category = $6,
+    cover_url = $7,
+    is_active = $8,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1 AND app_id = $2
+RETURNING *;
+
 -- name: DeleteGallery :exec
 DELETE FROM content_galleries
 WHERE id = $1 AND app_id = $2;

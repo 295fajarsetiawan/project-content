@@ -6,7 +6,9 @@ FROM content_custom_blocks
 WHERE app_id = sqlc.arg('app_id')
   AND (sqlc.narg('content_type')::text IS NULL OR sqlc.narg('content_type')::text = '' OR content_type = sqlc.narg('content_type'))
   AND (sqlc.narg('is_active')::boolean IS NULL OR is_active = sqlc.narg('is_active'))
-ORDER BY sequence_order ASC, created_at ASC;
+  AND (sqlc.narg('search')::text IS NULL OR sqlc.narg('search')::text = '' OR section_key ILIKE '%' || sqlc.narg('search') || '%' OR title ILIKE '%' || sqlc.narg('search') || '%')
+ORDER BY sequence_order ASC, created_at ASC
+LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
 
 -- name: GetCustomBlockBySection :one
 SELECT id, app_id, section_key, content_type, title, subtitle, body, image_url, metadata, sequence_order, is_active, created_at, updated_at
@@ -31,6 +33,14 @@ ON CONFLICT (app_id, section_key) DO UPDATE SET
     updated_at = CURRENT_TIMESTAMP
 RETURNING *;
 
+-- name: CountCustomBlocks :one
+SELECT COUNT(*)
+FROM content_custom_blocks
+WHERE app_id = sqlc.arg('app_id')
+  AND (sqlc.narg('content_type')::text IS NULL OR sqlc.narg('content_type')::text = '' OR content_type = sqlc.narg('content_type'))
+  AND (sqlc.narg('is_active')::boolean IS NULL OR is_active = sqlc.narg('is_active'))
+  AND (sqlc.narg('search')::text IS NULL OR sqlc.narg('search')::text = '' OR section_key ILIKE '%' || sqlc.narg('search') || '%' OR title ILIKE '%' || sqlc.narg('search') || '%');
+
 -- name: DeleteCustomBlock :exec
 DELETE FROM content_custom_blocks
 WHERE id = $1 AND app_id = $2;
@@ -43,7 +53,17 @@ FROM content_faqs
 WHERE app_id = sqlc.arg('app_id')
   AND (sqlc.narg('category')::text IS NULL OR sqlc.narg('category')::text = '' OR category = sqlc.narg('category'))
   AND (sqlc.narg('is_active')::boolean IS NULL OR is_active = sqlc.narg('is_active'))
-ORDER BY sequence_order ASC, created_at ASC;
+  AND (sqlc.narg('search')::text IS NULL OR sqlc.narg('search')::text = '' OR question ILIKE '%' || sqlc.narg('search') || '%' OR answer ILIKE '%' || sqlc.narg('search') || '%')
+ORDER BY sequence_order ASC, created_at ASC
+LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
+
+-- name: CountFAQs :one
+SELECT COUNT(*)
+FROM content_faqs
+WHERE app_id = sqlc.arg('app_id')
+  AND (sqlc.narg('category')::text IS NULL OR sqlc.narg('category')::text = '' OR category = sqlc.narg('category'))
+  AND (sqlc.narg('is_active')::boolean IS NULL OR is_active = sqlc.narg('is_active'))
+  AND (sqlc.narg('search')::text IS NULL OR sqlc.narg('search')::text = '' OR question ILIKE '%' || sqlc.narg('search') || '%' OR answer ILIKE '%' || sqlc.narg('search') || '%');
 
 -- name: CreateFAQ :one
 INSERT INTO content_faqs (

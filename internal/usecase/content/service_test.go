@@ -88,14 +88,14 @@ func (m *mockContentRepo) DeleteBanner(ctx context.Context, appID string, id uui
 	return nil
 }
 
-func (m *mockContentRepo) ListBlogCategories(ctx context.Context, appID string) ([]*entity.ContentBlogCategory, error) {
+func (m *mockContentRepo) ListBlogCategories(ctx context.Context, filter entity.ListBlogCategoriesFilter) ([]*entity.ContentBlogCategory, int64, error) {
 	var list []*entity.ContentBlogCategory
 	for _, c := range m.categories {
-		if c.AppID == appID {
+		if c.AppID == filter.AppID {
 			list = append(list, c)
 		}
 	}
-	return list, nil
+	return list, int64(len(list)), nil
 }
 
 func (m *mockContentRepo) GetBlogCategoryByID(ctx context.Context, appID string, id uuid.UUID) (*entity.ContentBlogCategory, error) {
@@ -121,6 +121,15 @@ func (m *mockContentRepo) CreateBlogCategory(ctx context.Context, category *enti
 		category.ID = uuid.New()
 	}
 	key := fmt.Sprintf("%s:%s", category.AppID, category.ID.String())
+	m.categories[key] = category
+	return category, nil
+}
+
+func (m *mockContentRepo) UpdateBlogCategory(ctx context.Context, category *entity.ContentBlogCategory) (*entity.ContentBlogCategory, error) {
+	key := fmt.Sprintf("%s:%s", category.AppID, category.ID.String())
+	if _, ok := m.categories[key]; !ok {
+		return nil, domainErrors.ErrBlogCategoryNotFound
+	}
 	m.categories[key] = category
 	return category, nil
 }
@@ -187,6 +196,15 @@ func (m *mockContentRepo) DeleteBlog(ctx context.Context, appID string, id uuid.
 	key := fmt.Sprintf("%s:%s", appID, id.String())
 	delete(m.blogs, key)
 	return nil
+}
+
+func (m *mockContentRepo) UpdateGallery(ctx context.Context, gallery *entity.ContentGallery) (*entity.ContentGallery, error) {
+	key := fmt.Sprintf("%s:%s", gallery.AppID, gallery.ID.String())
+	if _, ok := m.galleries[key]; !ok {
+		return nil, domainErrors.ErrGalleryNotFound
+	}
+	m.galleries[key] = gallery
+	return gallery, nil
 }
 
 func (m *mockContentRepo) ListGalleries(ctx context.Context, filter entity.ListGalleriesFilter) ([]*entity.ContentGallery, int64, error) {
@@ -257,14 +275,14 @@ func (m *mockContentRepo) DeleteGalleryItem(ctx context.Context, appID string, i
 	return nil
 }
 
-func (m *mockContentRepo) ListCustomBlocks(ctx context.Context, appID, contentType string, isActive *bool) ([]*entity.ContentCustomBlock, error) {
+func (m *mockContentRepo) ListCustomBlocks(ctx context.Context, filter entity.ListCustomBlocksFilter) ([]*entity.ContentCustomBlock, int64, error) {
 	var list []*entity.ContentCustomBlock
 	for _, b := range m.customBlocks {
-		if b.AppID == appID {
+		if b.AppID == filter.AppID {
 			list = append(list, b)
 		}
 	}
-	return list, nil
+	return list, int64(len(list)), nil
 }
 
 func (m *mockContentRepo) GetCustomBlockBySection(ctx context.Context, appID, sectionKey string) (*entity.ContentCustomBlock, error) {
@@ -295,14 +313,14 @@ func (m *mockContentRepo) DeleteCustomBlock(ctx context.Context, appID string, i
 	return nil
 }
 
-func (m *mockContentRepo) ListFAQs(ctx context.Context, appID, category string, isActive *bool) ([]*entity.ContentFAQ, error) {
+func (m *mockContentRepo) ListFAQs(ctx context.Context, filter entity.ListFAQsFilter) ([]*entity.ContentFAQ, int64, error) {
 	var list []*entity.ContentFAQ
 	for _, f := range m.faqs {
-		if f.AppID == appID {
+		if f.AppID == filter.AppID {
 			list = append(list, f)
 		}
 	}
-	return list, nil
+	return list, int64(len(list)), nil
 }
 
 func (m *mockContentRepo) CreateFAQ(ctx context.Context, faq *entity.ContentFAQ) (*entity.ContentFAQ, error) {
@@ -499,7 +517,7 @@ func TestContentUsecase_CustomBlocksAndFAQs(t *testing.T) {
 		t.Fatalf("create faq failed: %v", err)
 	}
 
-	faqs, err := uc.ListFAQs(ctx, "umroh", "UMRAH")
+	faqs, _, err := uc.ListFAQs(ctx, entity.ListFAQsFilter{AppID: "umroh", Category: "UMRAH", Limit: 10})
 	if err != nil {
 		t.Fatalf("list faqs failed: %v", err)
 	}

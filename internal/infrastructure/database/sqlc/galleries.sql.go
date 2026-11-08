@@ -321,3 +321,55 @@ func (q *Queries) ListGalleryItems(ctx context.Context, arg ListGalleryItemsPara
 	}
 	return items, nil
 }
+
+const updateGallery = `-- name: UpdateGallery :one
+UPDATE content_galleries
+SET
+    title = $3,
+    slug = $4,
+    description = $5,
+    category = $6,
+    cover_url = $7,
+    is_active = $8,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1 AND app_id = $2
+RETURNING id, app_id, title, slug, description, category, cover_url, is_active, created_at, updated_at
+`
+
+type UpdateGalleryParams struct {
+	ID          uuid.UUID `db:"id" json:"id"`
+	AppID       string    `db:"app_id" json:"app_id"`
+	Title       string    `db:"title" json:"title"`
+	Slug        string    `db:"slug" json:"slug"`
+	Description string    `db:"description" json:"description"`
+	Category    string    `db:"category" json:"category"`
+	CoverUrl    string    `db:"cover_url" json:"cover_url"`
+	IsActive    bool      `db:"is_active" json:"is_active"`
+}
+
+func (q *Queries) UpdateGallery(ctx context.Context, arg UpdateGalleryParams) (ContentGallery, error) {
+	row := q.db.QueryRow(ctx, updateGallery,
+		arg.ID,
+		arg.AppID,
+		arg.Title,
+		arg.Slug,
+		arg.Description,
+		arg.Category,
+		arg.CoverUrl,
+		arg.IsActive,
+	)
+	var i ContentGallery
+	err := row.Scan(
+		&i.ID,
+		&i.AppID,
+		&i.Title,
+		&i.Slug,
+		&i.Description,
+		&i.Category,
+		&i.CoverUrl,
+		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}

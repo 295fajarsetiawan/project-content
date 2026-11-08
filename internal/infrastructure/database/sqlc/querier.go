@@ -13,7 +13,10 @@ import (
 type Querier interface {
 	AddGalleryItem(ctx context.Context, arg AddGalleryItemParams) (ContentGalleryItem, error)
 	CountBanners(ctx context.Context, arg CountBannersParams) (int64, error)
+	CountBlogCategories(ctx context.Context, arg CountBlogCategoriesParams) (int64, error)
 	CountBlogs(ctx context.Context, arg CountBlogsParams) (int64, error)
+	CountCustomBlocks(ctx context.Context, arg CountCustomBlocksParams) (int64, error)
+	CountFAQs(ctx context.Context, arg CountFAQsParams) (int64, error)
 	CountGalleries(ctx context.Context, arg CountGalleriesParams) (int64, error)
 	CountTestimonials(ctx context.Context, arg CountTestimonialsParams) (int64, error)
 	CreateBanner(ctx context.Context, arg CreateBannerParams) (ContentBanner, error)
@@ -40,7 +43,7 @@ type Querier interface {
 	IncrementBlogViewCount(ctx context.Context, id uuid.UUID) error
 	ListBanners(ctx context.Context, arg ListBannersParams) ([]ContentBanner, error)
 	// Blog Categories
-	ListBlogCategories(ctx context.Context, appID string) ([]ContentBlogCategory, error)
+	ListBlogCategories(ctx context.Context, arg ListBlogCategoriesParams) ([]ContentBlogCategory, error)
 	// Blogs
 	ListBlogs(ctx context.Context, arg ListBlogsParams) ([]ListBlogsRow, error)
 	// 1. Custom Blocks
@@ -55,7 +58,9 @@ type Querier interface {
 	ListTestimonials(ctx context.Context, arg ListTestimonialsParams) ([]ContentTestimonial, error)
 	UpdateBanner(ctx context.Context, arg UpdateBannerParams) (ContentBanner, error)
 	UpdateBlog(ctx context.Context, arg UpdateBlogParams) (ContentBlog, error)
+	UpdateBlogCategory(ctx context.Context, arg UpdateBlogCategoryParams) (ContentBlogCategory, error)
 	UpdateFAQ(ctx context.Context, arg UpdateFAQParams) (ContentFaq, error)
+	UpdateGallery(ctx context.Context, arg UpdateGalleryParams) (ContentGallery, error)
 	UpdateTestimonial(ctx context.Context, arg UpdateTestimonialParams) (ContentTestimonial, error)
 	UpsertCustomBlock(ctx context.Context, arg UpsertCustomBlockParams) (ContentCustomBlock, error)
 }

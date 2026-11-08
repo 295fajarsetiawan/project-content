@@ -22,8 +22,9 @@ type ContentUsecase interface {
 	DeleteBanner(ctx context.Context, appID string, id uuid.UUID) error
 
 	// Blog Categories
-	ListBlogCategories(ctx context.Context, appID string) ([]*entity.ContentBlogCategory, error)
+	ListBlogCategories(ctx context.Context, filter entity.ListBlogCategoriesFilter) ([]*entity.ContentBlogCategory, *entity.PaginationMeta, error)
 	CreateBlogCategory(ctx context.Context, category *entity.ContentBlogCategory) (*entity.ContentBlogCategory, error)
+	UpdateBlogCategory(ctx context.Context, category *entity.ContentBlogCategory) (*entity.ContentBlogCategory, error)
 
 	// Blogs
 	ListBlogs(ctx context.Context, filter entity.ListBlogsFilter) ([]*entity.ContentBlog, *entity.PaginationMeta, error)
@@ -36,18 +37,19 @@ type ContentUsecase interface {
 	ListGalleries(ctx context.Context, filter entity.ListGalleriesFilter) ([]*entity.ContentGallery, *entity.PaginationMeta, error)
 	GetGallery(ctx context.Context, appID string, id *uuid.UUID, slug string) (*entity.ContentGallery, error)
 	CreateGallery(ctx context.Context, gallery *entity.ContentGallery) (*entity.ContentGallery, error)
+	UpdateGallery(ctx context.Context, gallery *entity.ContentGallery) (*entity.ContentGallery, error)
 	DeleteGallery(ctx context.Context, appID string, id uuid.UUID) error
 	AddGalleryItem(ctx context.Context, item *entity.ContentGalleryItem) (*entity.ContentGalleryItem, error)
 	DeleteGalleryItem(ctx context.Context, appID string, id uuid.UUID) error
 
 	// Custom Blocks
-	ListCustomBlocks(ctx context.Context, appID, contentType string) ([]*entity.ContentCustomBlock, error)
+	ListCustomBlocks(ctx context.Context, filter entity.ListCustomBlocksFilter) ([]*entity.ContentCustomBlock, *entity.PaginationMeta, error)
 	GetCustomBlock(ctx context.Context, appID, sectionKey string) (*entity.ContentCustomBlock, error)
 	UpsertCustomBlock(ctx context.Context, block *entity.ContentCustomBlock) (*entity.ContentCustomBlock, error)
 	DeleteCustomBlock(ctx context.Context, appID string, id uuid.UUID) error
 
 	// FAQs
-	ListFAQs(ctx context.Context, appID, category string) ([]*entity.ContentFAQ, error)
+	ListFAQs(ctx context.Context, filter entity.ListFAQsFilter) ([]*entity.ContentFAQ, *entity.PaginationMeta, error)
 	CreateFAQ(ctx context.Context, faq *entity.ContentFAQ) (*entity.ContentFAQ, error)
 	UpdateFAQ(ctx context.Context, faq *entity.ContentFAQ) (*entity.ContentFAQ, error)
 	DeleteFAQ(ctx context.Context, appID string, id uuid.UUID) error
@@ -60,6 +62,32 @@ type ContentUsecase interface {
 
 	// Media Storage
 	UploadMedia(ctx context.Context, appID, folder, filename, base64Content string) (*storage.MediaUploadResult, error)
+}
+
+// normalizePage clamps limit to 1..100 (default 10) and offset to >= 0.
+func normalizePage(limit, offset int32) (int32, int32) {
+	if limit < 1 || limit > 100 {
+		limit = 10
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	return limit, offset
+}
+
+// buildPaginationMeta computes pagination metadata for a list response.
+func buildPaginationMeta(offset, limit int32, total int64) *entity.PaginationMeta {
+	page := (offset / limit) + 1
+	totalPages := int32(math.Ceil(float64(total) / float64(limit)))
+	if totalPages == 0 && total > 0 {
+		totalPages = 1
+	}
+	return &entity.PaginationMeta{
+		CurrentPage: page,
+		PerPage:     limit,
+		TotalItems:  total,
+		TotalPages:  totalPages,
+	}
 }
 
 type contentUsecase struct {
@@ -169,11 +197,36 @@ func (u *contentUsecase) DeleteBanner(ctx context.Context, appID string, id uuid
 // 2. Blog Categories & Blogs Implementations
 // -----------------------------------------------------------------------------
 
-func (u *contentUsecase) ListBlogCategories(ctx context.Context, appID string) ([]*entity.ContentBlogCategory, error) {
-	if appID == "" {
-		appID = "umroh"
+func (u *contentUsecase) ListBlogCategories(ctx context.Context, filter entity.ListBlogCategoriesFilter) ([]*entity.ContentBlogCategory, *entity.PaginationMeta, error) {
+	if filter.AppID == "" {
+		filter.AppID = "umroh"
 	}
-	return u.repo.ListBlogCategories(ctx, appID)
+	limit, offset := normalizePage(filter.Limit, filter.Offset)
+	filter.Limit = limit
+	filter.Offset = offset
+
+	categories, total, err := u.repo.ListBlogCategories(ctx, filter)
+	if err != nil {
+		return nil, nil, err
+	}
+	return categories, buildPaginationMeta(offset, limit, total), nil
+}
+
+func (u *contentUsecase) UpdateBlogCategory(ctx context.Context, c *entity.ContentBlogCategory) (*entity.ContentBlogCategory, error) {
+	if c.ID == uuid.Nil {
+		return nil, domainErrors.ErrBlogCategoryNotFound
+	}
+	if c.Name == "" {
+		return nil, domainErrors.NewDomainError("INVALID_INPUT", "name is required", nil)
+	}
+	if c.Slug == "" {
+		c.Slug = slugify(c.Name)
+	}
+	if c.AppID == "" {
+		c.AppID = "umroh"
+	}
+	c.Slug = strings.ToLower(strings.TrimSpace(c.Slug))
+	return u.repo.UpdateBlogCategory(ctx, c)
 }
 
 func (u *contentUsecase) CreateBlogCategory(ctx context.Context, c *entity.ContentBlogCategory) (*entity.ContentBlogCategory, error) {
@@ -195,14 +248,7 @@ func (u *contentUsecase) ListBlogs(ctx context.Context, filter entity.ListBlogsF
 	if filter.AppID == "" {
 		filter.AppID = "umroh"
 	}
-	limit := filter.Limit
-	if limit < 1 || limit > 100 {
-		limit = 10
-	}
-	offset := filter.Offset
-	if offset < 0 {
-		offset = 0
-	}
+	limit, offset := normalizePage(filter.Limit, filter.Offset)
 	filter.Limit = limit
 	filter.Offset = offset
 
@@ -211,20 +257,7 @@ func (u *contentUsecase) ListBlogs(ctx context.Context, filter entity.ListBlogsF
 		return nil, nil, err
 	}
 
-	page := (offset / limit) + 1
-	totalPages := int32(math.Ceil(float64(total) / float64(limit)))
-	if totalPages == 0 && total > 0 {
-		totalPages = 1
-	}
-
-	meta := &entity.PaginationMeta{
-		CurrentPage: page,
-		PerPage:     limit,
-		TotalItems:  total,
-		TotalPages:  totalPages,
-	}
-
-	return blogs, meta, nil
+	return blogs, buildPaginationMeta(offset, limit, total), nil
 }
 
 func (u *contentUsecase) GetBlog(ctx context.Context, appID string, id *uuid.UUID, slug string) (*entity.ContentBlog, error) {
@@ -310,14 +343,7 @@ func (u *contentUsecase) ListGalleries(ctx context.Context, filter entity.ListGa
 	if filter.AppID == "" {
 		filter.AppID = "umroh"
 	}
-	limit := filter.Limit
-	if limit < 1 || limit > 100 {
-		limit = 10
-	}
-	offset := filter.Offset
-	if offset < 0 {
-		offset = 0
-	}
+	limit, offset := normalizePage(filter.Limit, filter.Offset)
 	filter.Limit = limit
 	filter.Offset = offset
 
@@ -326,20 +352,7 @@ func (u *contentUsecase) ListGalleries(ctx context.Context, filter entity.ListGa
 		return nil, nil, err
 	}
 
-	page := (offset / limit) + 1
-	totalPages := int32(math.Ceil(float64(total) / float64(limit)))
-	if totalPages == 0 && total > 0 {
-		totalPages = 1
-	}
-
-	meta := &entity.PaginationMeta{
-		CurrentPage: page,
-		PerPage:     limit,
-		TotalItems:  total,
-		TotalPages:  totalPages,
-	}
-
-	return galleries, meta, nil
+	return galleries, buildPaginationMeta(offset, limit, total), nil
 }
 
 func (u *contentUsecase) GetGallery(ctx context.Context, appID string, id *uuid.UUID, slug string) (*entity.ContentGallery, error) {
@@ -372,6 +385,27 @@ func (u *contentUsecase) CreateGallery(ctx context.Context, g *entity.ContentGal
 	g.Category = strings.ToUpper(g.Category)
 	g.IsActive = true
 	return u.repo.CreateGallery(ctx, g)
+}
+
+func (u *contentUsecase) UpdateGallery(ctx context.Context, g *entity.ContentGallery) (*entity.ContentGallery, error) {
+	if g.ID == uuid.Nil {
+		return nil, domainErrors.ErrGalleryNotFound
+	}
+	if g.Title == "" {
+		return nil, domainErrors.NewDomainError("INVALID_INPUT", "title is required", nil)
+	}
+	if g.Slug == "" {
+		g.Slug = slugify(g.Title)
+	}
+	if g.AppID == "" {
+		g.AppID = "umroh"
+	}
+	if g.Category == "" {
+		g.Category = "GENERAL"
+	}
+	g.Slug = strings.ToLower(strings.TrimSpace(g.Slug))
+	g.Category = strings.ToUpper(g.Category)
+	return u.repo.UpdateGallery(ctx, g)
 }
 
 func (u *contentUsecase) DeleteGallery(ctx context.Context, appID string, id uuid.UUID) error {
@@ -413,11 +447,19 @@ func (u *contentUsecase) DeleteGalleryItem(ctx context.Context, appID string, id
 // 4. Custom Blocks Implementations
 // -----------------------------------------------------------------------------
 
-func (u *contentUsecase) ListCustomBlocks(ctx context.Context, appID, contentType string) ([]*entity.ContentCustomBlock, error) {
-	if appID == "" {
-		appID = "umroh"
+func (u *contentUsecase) ListCustomBlocks(ctx context.Context, filter entity.ListCustomBlocksFilter) ([]*entity.ContentCustomBlock, *entity.PaginationMeta, error) {
+	if filter.AppID == "" {
+		filter.AppID = "umroh"
 	}
-	return u.repo.ListCustomBlocks(ctx, appID, contentType, nil)
+	limit, offset := normalizePage(filter.Limit, filter.Offset)
+	filter.Limit = limit
+	filter.Offset = offset
+
+	blocks, total, err := u.repo.ListCustomBlocks(ctx, filter)
+	if err != nil {
+		return nil, nil, err
+	}
+	return blocks, buildPaginationMeta(offset, limit, total), nil
 }
 
 func (u *contentUsecase) GetCustomBlock(ctx context.Context, appID, sectionKey string) (*entity.ContentCustomBlock, error) {
@@ -460,11 +502,19 @@ func (u *contentUsecase) DeleteCustomBlock(ctx context.Context, appID string, id
 // 5. FAQs Implementations
 // -----------------------------------------------------------------------------
 
-func (u *contentUsecase) ListFAQs(ctx context.Context, appID, category string) ([]*entity.ContentFAQ, error) {
-	if appID == "" {
-		appID = "umroh"
+func (u *contentUsecase) ListFAQs(ctx context.Context, filter entity.ListFAQsFilter) ([]*entity.ContentFAQ, *entity.PaginationMeta, error) {
+	if filter.AppID == "" {
+		filter.AppID = "umroh"
 	}
-	return u.repo.ListFAQs(ctx, appID, category, nil)
+	limit, offset := normalizePage(filter.Limit, filter.Offset)
+	filter.Limit = limit
+	filter.Offset = offset
+
+	faqs, total, err := u.repo.ListFAQs(ctx, filter)
+	if err != nil {
+		return nil, nil, err
+	}
+	return faqs, buildPaginationMeta(offset, limit, total), nil
 }
 
 func (u *contentUsecase) CreateFAQ(ctx context.Context, f *entity.ContentFAQ) (*entity.ContentFAQ, error) {
