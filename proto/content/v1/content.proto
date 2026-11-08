@@ -19,6 +19,7 @@ service ContentService {
   // ---------------------------------------------------------------------------
   rpc ListBlogCategories (ListBlogCategoriesRequest) returns (ListBlogCategoriesResponse);
   rpc CreateBlogCategory (CreateBlogCategoryRequest) returns (BlogCategoryResponse);
+  rpc UpdateBlogCategory (UpdateBlogCategoryRequest) returns (BlogCategoryResponse);
 
   rpc ListBlogs (ListBlogsRequest) returns (ListBlogsResponse);
   rpc GetBlog (GetBlogRequest) returns (BlogResponse);
@@ -32,6 +33,7 @@ service ContentService {
   rpc ListGalleries (ListGalleriesRequest) returns (ListGalleriesResponse);
   rpc GetGallery (GetGalleryRequest) returns (GalleryResponse);
   rpc CreateGallery (CreateGalleryRequest) returns (GalleryResponse);
+  rpc UpdateGallery (UpdateGalleryRequest) returns (GalleryResponse);
   rpc DeleteGallery (DeleteGalleryRequest) returns (MessageResponse);
   rpc AddGalleryItem (AddGalleryItemRequest) returns (GalleryItemResponse);
   rpc DeleteGalleryItem (DeleteGalleryItemRequest) returns (MessageResponse);
@@ -181,12 +183,25 @@ message BlogCategoryData {
 
 message ListBlogCategoriesRequest {
   string app_id = 1 [json_name = "app_id"];
+  int32 page = 2 [json_name = "page"];
+  int32 per_page = 3 [json_name = "per_page"];
+  string search = 4 [json_name = "search"];
 }
 
 message ListBlogCategoriesResponse {
   string message = 1 [json_name = "message"];
   string error = 2 [json_name = "error"];
   repeated BlogCategoryData data = 3 [json_name = "data"];
+  PaginationMeta pagination = 4 [json_name = "pagination"];
+}
+
+message UpdateBlogCategoryRequest {
+  string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
+  string name = 3 [json_name = "name"];
+  string slug = 4 [json_name = "slug"];
+  string description = 5 [json_name = "description"];
+  bool is_active = 6 [json_name = "is_active"];
 }
 
 message CreateBlogCategoryRequest {
@@ -355,6 +370,17 @@ message CreateGalleryRequest {
   string cover_url = 6 [json_name = "cover_url"];
 }
 
+message UpdateGalleryRequest {
+  string id = 1 [json_name = "id"];
+  string app_id = 2 [json_name = "app_id"];
+  string title = 3 [json_name = "title"];
+  string slug = 4 [json_name = "slug"];
+  string description = 5 [json_name = "description"];
+  string category = 6 [json_name = "category"];
+  string cover_url = 7 [json_name = "cover_url"];
+  bool is_active = 8 [json_name = "is_active"];
+}
+
 message DeleteGalleryRequest {
   string id = 1 [json_name = "id"];
   string app_id = 2 [json_name = "app_id"];
@@ -403,12 +429,16 @@ message CustomBlockData {
 message ListCustomBlocksRequest {
   string app_id = 1 [json_name = "app_id"];
   string content_type = 2 [json_name = "content_type"];
+  int32 page = 3 [json_name = "page"];
+  int32 per_page = 4 [json_name = "per_page"];
+  string search = 5 [json_name = "search"];
 }
 
 message ListCustomBlocksResponse {
   string message = 1 [json_name = "message"];
   string error = 2 [json_name = "error"];
   repeated CustomBlockData data = 3 [json_name = "data"];
+  PaginationMeta pagination = 4 [json_name = "pagination"];
 }
 
 message GetCustomBlockRequest {
@@ -453,12 +483,16 @@ message FAQData {
 message ListFAQsRequest {
   string app_id = 1 [json_name = "app_id"];
   string category = 2 [json_name = "category"];
+  int32 page = 3 [json_name = "page"];
+  int32 per_page = 4 [json_name = "per_page"];
+  string search = 5 [json_name = "search"];
 }
 
 message ListFAQsResponse {
   string message = 1 [json_name = "message"];
   string error = 2 [json_name = "error"];
   repeated FAQData data = 3 [json_name = "data"];
+  PaginationMeta pagination = 4 [json_name = "pagination"];
 }
 
 message CreateFAQRequest {

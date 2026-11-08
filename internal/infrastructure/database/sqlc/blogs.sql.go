@@ -13,6 +13,25 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countBlogCategories = `-- name: CountBlogCategories :one
+SELECT COUNT(*)
+FROM content_blog_categories
+WHERE app_id = $1
+  AND ($2::text IS NULL OR $2::text = '' OR name ILIKE '%' || $2 || '%' OR description ILIKE '%' || $2 || '%')
+`
+
+type CountBlogCategoriesParams struct {
+	AppID  string      `db:"app_id" json:"app_id"`
+	Search pgtype.Text `db:"search" json:"search"`
+}
+
+func (q *Queries) CountBlogCategories(ctx context.Context, arg CountBlogCategoriesParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countBlogCategories, arg.AppID, arg.Search)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countBlogs = `-- name: CountBlogs :one
 SELECT COUNT(*)
 FROM content_blogs b
@@ -382,12 +401,26 @@ const listBlogCategories = `-- name: ListBlogCategories :many
 SELECT id, app_id, name, slug, description, is_active, created_at, updated_at
 FROM content_blog_categories
 WHERE app_id = $1
+  AND ($2::text IS NULL OR $2::text = '' OR name ILIKE '%' || $2 || '%' OR description ILIKE '%' || $2 || '%')
 ORDER BY name ASC
+LIMIT $4 OFFSET $3
 `
 
+type ListBlogCategoriesParams struct {
+	AppID  string      `db:"app_id" json:"app_id"`
+	Search pgtype.Text `db:"search" json:"search"`
+	Offset int32       `db:"offset" json:"offset"`
+	Limit  int32       `db:"limit" json:"limit"`
+}
+
 // Blog Categories
-func (q *Queries) ListBlogCategories(ctx context.Context, appID string) ([]ContentBlogCategory, error) {
-	rows, err := q.db.Query(ctx, listBlogCategories, appID)
+func (q *Queries) ListBlogCategories(ctx context.Context, arg ListBlogCategoriesParams) ([]ContentBlogCategory, error) {
+	rows, err := q.db.Query(ctx, listBlogCategories,
+		arg.AppID,
+		arg.Search,
+		arg.Offset,
+		arg.Limit,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -588,6 +621,50 @@ func (q *Queries) UpdateBlog(ctx context.Context, arg UpdateBlogParams) (Content
 		&i.IsFeatured,
 		&i.ViewCount,
 		&i.PublishedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateBlogCategory = `-- name: UpdateBlogCategory :one
+UPDATE content_blog_categories
+SET
+    name = $3,
+    slug = $4,
+    description = $5,
+    is_active = $6,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1 AND app_id = $2
+RETURNING id, app_id, name, slug, description, is_active, created_at, updated_at
+`
+
+type UpdateBlogCategoryParams struct {
+	ID          uuid.UUID `db:"id" json:"id"`
+	AppID       string    `db:"app_id" json:"app_id"`
+	Name        string    `db:"name" json:"name"`
+	Slug        string    `db:"slug" json:"slug"`
+	Description string    `db:"description" json:"description"`
+	IsActive    bool      `db:"is_active" json:"is_active"`
+}
+
+func (q *Queries) UpdateBlogCategory(ctx context.Context, arg UpdateBlogCategoryParams) (ContentBlogCategory, error) {
+	row := q.db.QueryRow(ctx, updateBlogCategory,
+		arg.ID,
+		arg.AppID,
+		arg.Name,
+		arg.Slug,
+		arg.Description,
+		arg.IsActive,
+	)
+	var i ContentBlogCategory
+	err := row.Scan(
+		&i.ID,
+		&i.AppID,
+		&i.Name,
+		&i.Slug,
+		&i.Description,
+		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

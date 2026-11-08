@@ -60,15 +60,20 @@ func (m *mockContentUsecase) DeleteBanner(ctx context.Context, appID string, id 
 	return nil
 }
 
-func (m *mockContentUsecase) ListBlogCategories(ctx context.Context, appID string) ([]*entity.ContentBlogCategory, error) {
+func (m *mockContentUsecase) ListBlogCategories(ctx context.Context, filter entity.ListBlogCategoriesFilter) ([]*entity.ContentBlogCategory, *entity.PaginationMeta, error) {
 	return []*entity.ContentBlogCategory{
-		{ID: uuid.New(), AppID: appID, Name: "Tips", Slug: "tips", IsActive: true},
-	}, nil
+		{ID: uuid.New(), AppID: filter.AppID, Name: "Tips", Slug: "tips", IsActive: true},
+	}, &entity.PaginationMeta{CurrentPage: 1, PerPage: 10, TotalItems: 1, TotalPages: 1}, nil
 }
 
 func (m *mockContentUsecase) CreateBlogCategory(ctx context.Context, category *entity.ContentBlogCategory) (*entity.ContentBlogCategory, error) {
 	category.ID = uuid.New()
 	category.CreatedAt = time.Now()
+	return category, nil
+}
+
+func (m *mockContentUsecase) UpdateBlogCategory(ctx context.Context, category *entity.ContentBlogCategory) (*entity.ContentBlogCategory, error) {
+	category.UpdatedAt = time.Now()
 	return category, nil
 }
 
@@ -125,6 +130,12 @@ func (m *mockContentUsecase) CreateGallery(ctx context.Context, gallery *entity.
 	return gallery, nil
 }
 
+func (m *mockContentUsecase) UpdateGallery(ctx context.Context, gallery *entity.ContentGallery) (*entity.ContentGallery, error) {
+	gallery.UpdatedAt = time.Now()
+	m.gallery = gallery
+	return gallery, nil
+}
+
 func (m *mockContentUsecase) DeleteGallery(ctx context.Context, appID string, id uuid.UUID) error {
 	m.gallery = nil
 	return nil
@@ -139,11 +150,11 @@ func (m *mockContentUsecase) DeleteGalleryItem(ctx context.Context, appID string
 	return nil
 }
 
-func (m *mockContentUsecase) ListCustomBlocks(ctx context.Context, appID, contentType string) ([]*entity.ContentCustomBlock, error) {
+func (m *mockContentUsecase) ListCustomBlocks(ctx context.Context, filter entity.ListCustomBlocksFilter) ([]*entity.ContentCustomBlock, *entity.PaginationMeta, error) {
 	if m.block != nil {
-		return []*entity.ContentCustomBlock{m.block}, nil
+		return []*entity.ContentCustomBlock{m.block}, &entity.PaginationMeta{CurrentPage: 1, PerPage: 10, TotalItems: 1, TotalPages: 1}, nil
 	}
-	return []*entity.ContentCustomBlock{}, nil
+	return []*entity.ContentCustomBlock{}, &entity.PaginationMeta{CurrentPage: 1, PerPage: 10, TotalItems: 0, TotalPages: 0}, nil
 }
 
 func (m *mockContentUsecase) GetCustomBlock(ctx context.Context, appID, sectionKey string) (*entity.ContentCustomBlock, error) {
@@ -164,11 +175,11 @@ func (m *mockContentUsecase) DeleteCustomBlock(ctx context.Context, appID string
 	return nil
 }
 
-func (m *mockContentUsecase) ListFAQs(ctx context.Context, appID, category string) ([]*entity.ContentFAQ, error) {
+func (m *mockContentUsecase) ListFAQs(ctx context.Context, filter entity.ListFAQsFilter) ([]*entity.ContentFAQ, *entity.PaginationMeta, error) {
 	if m.faq != nil {
-		return []*entity.ContentFAQ{m.faq}, nil
+		return []*entity.ContentFAQ{m.faq}, &entity.PaginationMeta{CurrentPage: 1, PerPage: 10, TotalItems: 1, TotalPages: 1}, nil
 	}
-	return []*entity.ContentFAQ{}, nil
+	return []*entity.ContentFAQ{}, &entity.PaginationMeta{CurrentPage: 1, PerPage: 10, TotalItems: 0, TotalPages: 0}, nil
 }
 
 func (m *mockContentUsecase) CreateFAQ(ctx context.Context, faq *entity.ContentFAQ) (*entity.ContentFAQ, error) {

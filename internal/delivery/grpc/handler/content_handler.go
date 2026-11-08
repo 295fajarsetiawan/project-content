@@ -46,12 +46,18 @@ func (h *ContentHandler) ListBanners(ctx context.Context, req *pb.ListBannersReq
 	}
 	offset := (page - 1) * perPage
 
-	banners, meta, err := h.usecase.ListBanners(ctx, entity.ListBannersFilter{
+	bannerFilter := entity.ListBannersFilter{
 		AppID:    appID,
 		Position: req.GetPosition(),
 		Limit:    perPage,
 		Offset:   offset,
-	})
+	}
+	if !interceptor.IsAdmin(ctx) {
+		active := true
+		bannerFilter.IsActive = &active
+	}
+
+	banners, meta, err := h.usecase.ListBanners(ctx, bannerFilter)
 	if err != nil {
 		return nil, mapDomainErrorToGRPC(err)
 	}
@@ -224,7 +230,14 @@ func (h *ContentHandler) DeleteBanner(ctx context.Context, req *pb.DeleteBannerR
 func (h *ContentHandler) ListBlogCategories(ctx context.Context, req *pb.ListBlogCategoriesRequest) (*pb.ListBlogCategoriesResponse, error) {
 	appID, _ := interceptor.ExtractAppID(ctx, req.GetAppId())
 
-	categories, err := h.usecase.ListBlogCategories(ctx, appID)
+	perPage, offset := normalizePageRequest(req.GetPage(), req.GetPerPage())
+
+	categories, meta, err := h.usecase.ListBlogCategories(ctx, entity.ListBlogCategoriesFilter{
+		AppID:  appID,
+		Search: req.GetSearch(),
+		Limit:  perPage,
+		Offset: offset,
+	})
 	if err != nil {
 		return nil, mapDomainErrorToGRPC(err)
 	}
@@ -235,8 +248,35 @@ func (h *ContentHandler) ListBlogCategories(ctx context.Context, req *pb.ListBlo
 	}
 
 	return &pb.ListBlogCategoriesResponse{
-		Message: "Blog categories retrieved successfully",
-		Data:    protoCategories,
+		Message:    "Blog categories retrieved successfully",
+		Data:       protoCategories,
+		Pagination: toProtoPagination(meta),
+	}, nil
+}
+
+func (h *ContentHandler) UpdateBlogCategory(ctx context.Context, req *pb.UpdateBlogCategoryRequest) (*pb.BlogCategoryResponse, error) {
+	appID, _ := interceptor.ExtractAppID(ctx, req.GetAppId())
+
+	id, err := uuid.Parse(req.GetId())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid blog category id format")
+	}
+
+	updated, err := h.usecase.UpdateBlogCategory(ctx, &entity.ContentBlogCategory{
+		ID:          id,
+		AppID:       appID,
+		Name:        req.GetName(),
+		Slug:        req.GetSlug(),
+		Description: req.GetDescription(),
+		IsActive:    req.GetIsActive(),
+	})
+	if err != nil {
+		return nil, mapDomainErrorToGRPC(err)
+	}
+
+	return &pb.BlogCategoryResponse{
+		Message: "Blog category updated successfully",
+		Data:    toProtoBlogCategory(updated),
 	}, nil
 }
 
@@ -272,20 +312,17 @@ func (h *ContentHandler) ListBlogs(ctx context.Context, req *pb.ListBlogsRequest
 		}
 	}
 
-	page := req.GetPage()
-	if page < 1 {
-		page = 1
+	perPage, offset := normalizePageRequest(req.GetPage(), req.GetPerPage())
+
+	statusFilter := req.GetStatus()
+	if !interceptor.IsAdmin(ctx) {
+		statusFilter = "PUBLISHED"
 	}
-	perPage := req.GetPerPage()
-	if perPage < 1 || perPage > 100 {
-		perPage = 10
-	}
-	offset := (page - 1) * perPage
 
 	blogs, meta, err := h.usecase.ListBlogs(ctx, entity.ListBlogsFilter{
 		AppID:      appID,
 		CategoryID: categoryID,
-		Status:     req.GetStatus(),
+		Status:     statusFilter,
 		Search:     req.GetSearch(),
 		Limit:      perPage,
 		Offset:     offset,
@@ -324,6 +361,9 @@ func (h *ContentHandler) GetBlog(ctx context.Context, req *pb.GetBlogRequest) (*
 	b, err := h.usecase.GetBlog(ctx, appID, id, req.GetSlug())
 	if err != nil {
 		return nil, mapDomainErrorToGRPC(err)
+	}
+	if !interceptor.IsAdmin(ctx) && b.Status != "PUBLISHED" {
+		return nil, mapDomainErrorToGRPC(domainErrors.ErrBlogNotFound)
 	}
 
 	return &pb.BlogResponse{
@@ -444,22 +484,20 @@ func (h *ContentHandler) DeleteBlog(ctx context.Context, req *pb.DeleteBlogReque
 func (h *ContentHandler) ListGalleries(ctx context.Context, req *pb.ListGalleriesRequest) (*pb.ListGalleriesResponse, error) {
 	appID, _ := interceptor.ExtractAppID(ctx, req.GetAppId())
 
-	page := req.GetPage()
-	if page < 1 {
-		page = 1
-	}
-	perPage := req.GetPerPage()
-	if perPage < 1 || perPage > 100 {
-		perPage = 10
-	}
-	offset := (page - 1) * perPage
+	perPage, offset := normalizePageRequest(req.GetPage(), req.GetPerPage())
 
-	galleries, meta, err := h.usecase.ListGalleries(ctx, entity.ListGalleriesFilter{
+	filter := entity.ListGalleriesFilter{
 		AppID:    appID,
 		Category: req.GetCategory(),
 		Limit:    perPage,
 		Offset:   offset,
-	})
+	}
+	if !interceptor.IsAdmin(ctx) {
+		active := true
+		filter.IsActive = &active
+	}
+
+	galleries, meta, err := h.usecase.ListGalleries(ctx, filter)
 	if err != nil {
 		return nil, mapDomainErrorToGRPC(err)
 	}
@@ -481,6 +519,34 @@ func (h *ContentHandler) ListGalleries(ctx context.Context, req *pb.ListGallerie
 	}, nil
 }
 
+func (h *ContentHandler) UpdateGallery(ctx context.Context, req *pb.UpdateGalleryRequest) (*pb.GalleryResponse, error) {
+	appID, _ := interceptor.ExtractAppID(ctx, req.GetAppId())
+
+	id, err := uuid.Parse(req.GetId())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid gallery id format")
+	}
+
+	updated, err := h.usecase.UpdateGallery(ctx, &entity.ContentGallery{
+		ID:          id,
+		AppID:       appID,
+		Title:       req.GetTitle(),
+		Slug:        req.GetSlug(),
+		Description: req.GetDescription(),
+		Category:    req.GetCategory(),
+		CoverURL:    req.GetCoverUrl(),
+		IsActive:    req.GetIsActive(),
+	})
+	if err != nil {
+		return nil, mapDomainErrorToGRPC(err)
+	}
+
+	return &pb.GalleryResponse{
+		Message: "Gallery updated successfully",
+		Data:    toProtoGallery(updated),
+	}, nil
+}
+
 func (h *ContentHandler) GetGallery(ctx context.Context, req *pb.GetGalleryRequest) (*pb.GalleryResponse, error) {
 	appID, _ := interceptor.ExtractAppID(ctx, req.GetAppId())
 
@@ -494,6 +560,9 @@ func (h *ContentHandler) GetGallery(ctx context.Context, req *pb.GetGalleryReque
 	g, err := h.usecase.GetGallery(ctx, appID, id, req.GetSlug())
 	if err != nil {
 		return nil, mapDomainErrorToGRPC(err)
+	}
+	if !interceptor.IsAdmin(ctx) && !g.IsActive {
+		return nil, mapDomainErrorToGRPC(domainErrors.ErrGalleryNotFound)
 	}
 
 	return &pb.GalleryResponse{
@@ -598,7 +667,21 @@ func (h *ContentHandler) DeleteGalleryItem(ctx context.Context, req *pb.DeleteGa
 func (h *ContentHandler) ListCustomBlocks(ctx context.Context, req *pb.ListCustomBlocksRequest) (*pb.ListCustomBlocksResponse, error) {
 	appID, _ := interceptor.ExtractAppID(ctx, req.GetAppId())
 
-	blocks, err := h.usecase.ListCustomBlocks(ctx, appID, req.GetContentType())
+	perPage, offset := normalizePageRequest(req.GetPage(), req.GetPerPage())
+
+	filter := entity.ListCustomBlocksFilter{
+		AppID:       appID,
+		ContentType: req.GetContentType(),
+		Search:      req.GetSearch(),
+		Limit:       perPage,
+		Offset:      offset,
+	}
+	if !interceptor.IsAdmin(ctx) {
+		active := true
+		filter.IsActive = &active
+	}
+
+	blocks, meta, err := h.usecase.ListCustomBlocks(ctx, filter)
 	if err != nil {
 		return nil, mapDomainErrorToGRPC(err)
 	}
@@ -609,8 +692,9 @@ func (h *ContentHandler) ListCustomBlocks(ctx context.Context, req *pb.ListCusto
 	}
 
 	return &pb.ListCustomBlocksResponse{
-		Message: "Custom blocks retrieved successfully",
-		Data:    protoBlocks,
+		Message:    "Custom blocks retrieved successfully",
+		Data:       protoBlocks,
+		Pagination: toProtoPagination(meta),
 	}, nil
 }
 
@@ -620,6 +704,9 @@ func (h *ContentHandler) GetCustomBlock(ctx context.Context, req *pb.GetCustomBl
 	b, err := h.usecase.GetCustomBlock(ctx, appID, req.GetSectionKey())
 	if err != nil {
 		return nil, mapDomainErrorToGRPC(err)
+	}
+	if !interceptor.IsAdmin(ctx) && !b.IsActive {
+		return nil, mapDomainErrorToGRPC(domainErrors.ErrCustomBlockNotFound)
 	}
 
 	return &pb.CustomBlockResponse{
@@ -680,7 +767,21 @@ func (h *ContentHandler) DeleteCustomBlock(ctx context.Context, req *pb.DeleteCu
 func (h *ContentHandler) ListFAQs(ctx context.Context, req *pb.ListFAQsRequest) (*pb.ListFAQsResponse, error) {
 	appID, _ := interceptor.ExtractAppID(ctx, req.GetAppId())
 
-	faqs, err := h.usecase.ListFAQs(ctx, appID, req.GetCategory())
+	perPage, offset := normalizePageRequest(req.GetPage(), req.GetPerPage())
+
+	filter := entity.ListFAQsFilter{
+		AppID:    appID,
+		Category: req.GetCategory(),
+		Search:   req.GetSearch(),
+		Limit:    perPage,
+		Offset:   offset,
+	}
+	if !interceptor.IsAdmin(ctx) {
+		active := true
+		filter.IsActive = &active
+	}
+
+	faqs, meta, err := h.usecase.ListFAQs(ctx, filter)
 	if err != nil {
 		return nil, mapDomainErrorToGRPC(err)
 	}
@@ -691,8 +792,9 @@ func (h *ContentHandler) ListFAQs(ctx context.Context, req *pb.ListFAQsRequest) 
 	}
 
 	return &pb.ListFAQsResponse{
-		Message: "FAQs retrieved successfully",
-		Data:    protoFAQs,
+		Message:    "FAQs retrieved successfully",
+		Data:       protoFAQs,
+		Pagination: toProtoPagination(meta),
 	}, nil
 }
 
@@ -778,11 +880,17 @@ func (h *ContentHandler) ListTestimonials(ctx context.Context, req *pb.ListTesti
 	}
 	offset := (page - 1) * perPage
 
-	testimonials, meta, err := h.usecase.ListTestimonials(ctx, entity.ListTestimonialsFilter{
+	testimonialFilter := entity.ListTestimonialsFilter{
 		AppID:  appID,
 		Limit:  perPage,
 		Offset: offset,
-	})
+	}
+	if !interceptor.IsAdmin(ctx) {
+		active := true
+		testimonialFilter.IsActive = &active
+	}
+
+	testimonials, meta, err := h.usecase.ListTestimonials(ctx, testimonialFilter)
 	if err != nil {
 		return nil, mapDomainErrorToGRPC(err)
 	}
@@ -965,6 +1073,30 @@ func toProtoBanner(b *entity.ContentBanner) *pb.BannerData {
 		AdditionalData: additionalDataStr,
 		CreatedAt:      b.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:      b.UpdatedAt.Format(time.RFC3339),
+	}
+}
+
+// normalizePageRequest returns the per-page size and offset for a 1-based page request.
+func normalizePageRequest(page, perPage int32) (int32, int32) {
+	if page < 1 {
+		page = 1
+	}
+	if perPage < 1 || perPage > 100 {
+		perPage = 10
+	}
+	return perPage, (page - 1) * perPage
+}
+
+// toProtoPagination converts usecase pagination metadata to its protobuf form.
+func toProtoPagination(m *entity.PaginationMeta) *pb.PaginationMeta {
+	if m == nil {
+		return nil
+	}
+	return &pb.PaginationMeta{
+		CurrentPage: m.CurrentPage,
+		PerPage:     m.PerPage,
+		TotalItems:  m.TotalItems,
+		TotalPages:  m.TotalPages,
 	}
 }
 

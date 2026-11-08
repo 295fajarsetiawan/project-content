@@ -12,6 +12,62 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countCustomBlocks = `-- name: CountCustomBlocks :one
+SELECT COUNT(*)
+FROM content_custom_blocks
+WHERE app_id = $1
+  AND ($2::text IS NULL OR $2::text = '' OR content_type = $2)
+  AND ($3::boolean IS NULL OR is_active = $3)
+  AND ($4::text IS NULL OR $4::text = '' OR section_key ILIKE '%' || $4 || '%' OR title ILIKE '%' || $4 || '%')
+`
+
+type CountCustomBlocksParams struct {
+	AppID       string      `db:"app_id" json:"app_id"`
+	ContentType pgtype.Text `db:"content_type" json:"content_type"`
+	IsActive    pgtype.Bool `db:"is_active" json:"is_active"`
+	Search      pgtype.Text `db:"search" json:"search"`
+}
+
+func (q *Queries) CountCustomBlocks(ctx context.Context, arg CountCustomBlocksParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countCustomBlocks,
+		arg.AppID,
+		arg.ContentType,
+		arg.IsActive,
+		arg.Search,
+	)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countFAQs = `-- name: CountFAQs :one
+SELECT COUNT(*)
+FROM content_faqs
+WHERE app_id = $1
+  AND ($2::text IS NULL OR $2::text = '' OR category = $2)
+  AND ($3::boolean IS NULL OR is_active = $3)
+  AND ($4::text IS NULL OR $4::text = '' OR question ILIKE '%' || $4 || '%' OR answer ILIKE '%' || $4 || '%')
+`
+
+type CountFAQsParams struct {
+	AppID    string      `db:"app_id" json:"app_id"`
+	Category pgtype.Text `db:"category" json:"category"`
+	IsActive pgtype.Bool `db:"is_active" json:"is_active"`
+	Search   pgtype.Text `db:"search" json:"search"`
+}
+
+func (q *Queries) CountFAQs(ctx context.Context, arg CountFAQsParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countFAQs,
+		arg.AppID,
+		arg.Category,
+		arg.IsActive,
+		arg.Search,
+	)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countTestimonials = `-- name: CountTestimonials :one
 SELECT COUNT(*)
 FROM content_testimonials
@@ -210,18 +266,30 @@ FROM content_custom_blocks
 WHERE app_id = $1
   AND ($2::text IS NULL OR $2::text = '' OR content_type = $2)
   AND ($3::boolean IS NULL OR is_active = $3)
+  AND ($4::text IS NULL OR $4::text = '' OR section_key ILIKE '%' || $4 || '%' OR title ILIKE '%' || $4 || '%')
 ORDER BY sequence_order ASC, created_at ASC
+LIMIT $6 OFFSET $5
 `
 
 type ListCustomBlocksParams struct {
 	AppID       string      `db:"app_id" json:"app_id"`
 	ContentType pgtype.Text `db:"content_type" json:"content_type"`
 	IsActive    pgtype.Bool `db:"is_active" json:"is_active"`
+	Search      pgtype.Text `db:"search" json:"search"`
+	Offset      int32       `db:"offset" json:"offset"`
+	Limit       int32       `db:"limit" json:"limit"`
 }
 
 // 1. Custom Blocks
 func (q *Queries) ListCustomBlocks(ctx context.Context, arg ListCustomBlocksParams) ([]ContentCustomBlock, error) {
-	rows, err := q.db.Query(ctx, listCustomBlocks, arg.AppID, arg.ContentType, arg.IsActive)
+	rows, err := q.db.Query(ctx, listCustomBlocks,
+		arg.AppID,
+		arg.ContentType,
+		arg.IsActive,
+		arg.Search,
+		arg.Offset,
+		arg.Limit,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -261,18 +329,30 @@ FROM content_faqs
 WHERE app_id = $1
   AND ($2::text IS NULL OR $2::text = '' OR category = $2)
   AND ($3::boolean IS NULL OR is_active = $3)
+  AND ($4::text IS NULL OR $4::text = '' OR question ILIKE '%' || $4 || '%' OR answer ILIKE '%' || $4 || '%')
 ORDER BY sequence_order ASC, created_at ASC
+LIMIT $6 OFFSET $5
 `
 
 type ListFAQsParams struct {
 	AppID    string      `db:"app_id" json:"app_id"`
 	Category pgtype.Text `db:"category" json:"category"`
 	IsActive pgtype.Bool `db:"is_active" json:"is_active"`
+	Search   pgtype.Text `db:"search" json:"search"`
+	Offset   int32       `db:"offset" json:"offset"`
+	Limit    int32       `db:"limit" json:"limit"`
 }
 
 // 2. FAQs
 func (q *Queries) ListFAQs(ctx context.Context, arg ListFAQsParams) ([]ContentFaq, error) {
-	rows, err := q.db.Query(ctx, listFAQs, arg.AppID, arg.Category, arg.IsActive)
+	rows, err := q.db.Query(ctx, listFAQs,
+		arg.AppID,
+		arg.Category,
+		arg.IsActive,
+		arg.Search,
+		arg.Offset,
+		arg.Limit,
+	)
 	if err != nil {
 		return nil, err
 	}

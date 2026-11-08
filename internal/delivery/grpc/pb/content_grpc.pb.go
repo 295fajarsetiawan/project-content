@@ -26,6 +26,7 @@ const (
 	ContentService_DeleteBanner_FullMethodName       = "/content.v1.ContentService/DeleteBanner"
 	ContentService_ListBlogCategories_FullMethodName = "/content.v1.ContentService/ListBlogCategories"
 	ContentService_CreateBlogCategory_FullMethodName = "/content.v1.ContentService/CreateBlogCategory"
+	ContentService_UpdateBlogCategory_FullMethodName = "/content.v1.ContentService/UpdateBlogCategory"
 	ContentService_ListBlogs_FullMethodName          = "/content.v1.ContentService/ListBlogs"
 	ContentService_GetBlog_FullMethodName            = "/content.v1.ContentService/GetBlog"
 	ContentService_CreateBlog_FullMethodName         = "/content.v1.ContentService/CreateBlog"
@@ -34,6 +35,7 @@ const (
 	ContentService_ListGalleries_FullMethodName      = "/content.v1.ContentService/ListGalleries"
 	ContentService_GetGallery_FullMethodName         = "/content.v1.ContentService/GetGallery"
 	ContentService_CreateGallery_FullMethodName      = "/content.v1.ContentService/CreateGallery"
+	ContentService_UpdateGallery_FullMethodName      = "/content.v1.ContentService/UpdateGallery"
 	ContentService_DeleteGallery_FullMethodName      = "/content.v1.ContentService/DeleteGallery"
 	ContentService_AddGalleryItem_FullMethodName     = "/content.v1.ContentService/AddGalleryItem"
 	ContentService_DeleteGalleryItem_FullMethodName  = "/content.v1.ContentService/DeleteGalleryItem"
@@ -69,6 +71,7 @@ type ContentServiceClient interface {
 	// ---------------------------------------------------------------------------
 	ListBlogCategories(ctx context.Context, in *ListBlogCategoriesRequest, opts ...grpc.CallOption) (*ListBlogCategoriesResponse, error)
 	CreateBlogCategory(ctx context.Context, in *CreateBlogCategoryRequest, opts ...grpc.CallOption) (*BlogCategoryResponse, error)
+	UpdateBlogCategory(ctx context.Context, in *UpdateBlogCategoryRequest, opts ...grpc.CallOption) (*BlogCategoryResponse, error)
 	ListBlogs(ctx context.Context, in *ListBlogsRequest, opts ...grpc.CallOption) (*ListBlogsResponse, error)
 	GetBlog(ctx context.Context, in *GetBlogRequest, opts ...grpc.CallOption) (*BlogResponse, error)
 	CreateBlog(ctx context.Context, in *CreateBlogRequest, opts ...grpc.CallOption) (*BlogResponse, error)
@@ -80,6 +83,7 @@ type ContentServiceClient interface {
 	ListGalleries(ctx context.Context, in *ListGalleriesRequest, opts ...grpc.CallOption) (*ListGalleriesResponse, error)
 	GetGallery(ctx context.Context, in *GetGalleryRequest, opts ...grpc.CallOption) (*GalleryResponse, error)
 	CreateGallery(ctx context.Context, in *CreateGalleryRequest, opts ...grpc.CallOption) (*GalleryResponse, error)
+	UpdateGallery(ctx context.Context, in *UpdateGalleryRequest, opts ...grpc.CallOption) (*GalleryResponse, error)
 	DeleteGallery(ctx context.Context, in *DeleteGalleryRequest, opts ...grpc.CallOption) (*MessageResponse, error)
 	AddGalleryItem(ctx context.Context, in *AddGalleryItemRequest, opts ...grpc.CallOption) (*GalleryItemResponse, error)
 	DeleteGalleryItem(ctx context.Context, in *DeleteGalleryItemRequest, opts ...grpc.CallOption) (*MessageResponse, error)
@@ -182,6 +186,16 @@ func (c *contentServiceClient) CreateBlogCategory(ctx context.Context, in *Creat
 	return out, nil
 }
 
+func (c *contentServiceClient) UpdateBlogCategory(ctx context.Context, in *UpdateBlogCategoryRequest, opts ...grpc.CallOption) (*BlogCategoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BlogCategoryResponse)
+	err := c.cc.Invoke(ctx, ContentService_UpdateBlogCategory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *contentServiceClient) ListBlogs(ctx context.Context, in *ListBlogsRequest, opts ...grpc.CallOption) (*ListBlogsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListBlogsResponse)
@@ -256,6 +270,16 @@ func (c *contentServiceClient) CreateGallery(ctx context.Context, in *CreateGall
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GalleryResponse)
 	err := c.cc.Invoke(ctx, ContentService_CreateGallery_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *contentServiceClient) UpdateGallery(ctx context.Context, in *UpdateGalleryRequest, opts ...grpc.CallOption) (*GalleryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GalleryResponse)
+	err := c.cc.Invoke(ctx, ContentService_UpdateGallery_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -439,6 +463,7 @@ type ContentServiceServer interface {
 	// ---------------------------------------------------------------------------
 	ListBlogCategories(context.Context, *ListBlogCategoriesRequest) (*ListBlogCategoriesResponse, error)
 	CreateBlogCategory(context.Context, *CreateBlogCategoryRequest) (*BlogCategoryResponse, error)
+	UpdateBlogCategory(context.Context, *UpdateBlogCategoryRequest) (*BlogCategoryResponse, error)
 	ListBlogs(context.Context, *ListBlogsRequest) (*ListBlogsResponse, error)
 	GetBlog(context.Context, *GetBlogRequest) (*BlogResponse, error)
 	CreateBlog(context.Context, *CreateBlogRequest) (*BlogResponse, error)
@@ -450,6 +475,7 @@ type ContentServiceServer interface {
 	ListGalleries(context.Context, *ListGalleriesRequest) (*ListGalleriesResponse, error)
 	GetGallery(context.Context, *GetGalleryRequest) (*GalleryResponse, error)
 	CreateGallery(context.Context, *CreateGalleryRequest) (*GalleryResponse, error)
+	UpdateGallery(context.Context, *UpdateGalleryRequest) (*GalleryResponse, error)
 	DeleteGallery(context.Context, *DeleteGalleryRequest) (*MessageResponse, error)
 	AddGalleryItem(context.Context, *AddGalleryItemRequest) (*GalleryItemResponse, error)
 	DeleteGalleryItem(context.Context, *DeleteGalleryItemRequest) (*MessageResponse, error)
@@ -503,6 +529,9 @@ func (UnimplementedContentServiceServer) ListBlogCategories(context.Context, *Li
 func (UnimplementedContentServiceServer) CreateBlogCategory(context.Context, *CreateBlogCategoryRequest) (*BlogCategoryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateBlogCategory not implemented")
 }
+func (UnimplementedContentServiceServer) UpdateBlogCategory(context.Context, *UpdateBlogCategoryRequest) (*BlogCategoryResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateBlogCategory not implemented")
+}
 func (UnimplementedContentServiceServer) ListBlogs(context.Context, *ListBlogsRequest) (*ListBlogsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListBlogs not implemented")
 }
@@ -526,6 +555,9 @@ func (UnimplementedContentServiceServer) GetGallery(context.Context, *GetGallery
 }
 func (UnimplementedContentServiceServer) CreateGallery(context.Context, *CreateGalleryRequest) (*GalleryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateGallery not implemented")
+}
+func (UnimplementedContentServiceServer) UpdateGallery(context.Context, *UpdateGalleryRequest) (*GalleryResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateGallery not implemented")
 }
 func (UnimplementedContentServiceServer) DeleteGallery(context.Context, *DeleteGalleryRequest) (*MessageResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteGallery not implemented")
@@ -722,6 +754,24 @@ func _ContentService_CreateBlogCategory_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ContentService_UpdateBlogCategory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateBlogCategoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContentServiceServer).UpdateBlogCategory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ContentService_UpdateBlogCategory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContentServiceServer).UpdateBlogCategory(ctx, req.(*UpdateBlogCategoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ContentService_ListBlogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListBlogsRequest)
 	if err := dec(in); err != nil {
@@ -862,6 +912,24 @@ func _ContentService_CreateGallery_Handler(srv interface{}, ctx context.Context,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ContentServiceServer).CreateGallery(ctx, req.(*CreateGalleryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ContentService_UpdateGallery_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateGalleryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContentServiceServer).UpdateGallery(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ContentService_UpdateGallery_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContentServiceServer).UpdateGallery(ctx, req.(*UpdateGalleryRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1190,6 +1258,10 @@ var ContentService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ContentService_CreateBlogCategory_Handler,
 		},
 		{
+			MethodName: "UpdateBlogCategory",
+			Handler:    _ContentService_UpdateBlogCategory_Handler,
+		},
+		{
 			MethodName: "ListBlogs",
 			Handler:    _ContentService_ListBlogs_Handler,
 		},
@@ -1220,6 +1292,10 @@ var ContentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateGallery",
 			Handler:    _ContentService_CreateGallery_Handler,
+		},
+		{
+			MethodName: "UpdateGallery",
+			Handler:    _ContentService_UpdateGallery_Handler,
 		},
 		{
 			MethodName: "DeleteGallery",

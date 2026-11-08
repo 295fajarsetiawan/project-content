@@ -180,10 +180,28 @@ func (r *contentRepository) DeleteBanner(ctx context.Context, appID string, id u
 // 2. Content Blog & Categories
 // -----------------------------------------------------------------------------
 
-func (r *contentRepository) ListBlogCategories(ctx context.Context, appID string) ([]*entity.ContentBlogCategory, error) {
-	rows, err := r.queries.ListBlogCategories(ctx, appID)
+func (r *contentRepository) ListBlogCategories(ctx context.Context, filter entity.ListBlogCategoriesFilter) ([]*entity.ContentBlogCategory, int64, error) {
+	var searchText pgtype.Text
+	if filter.Search != "" {
+		searchText = pgtype.Text{String: filter.Search, Valid: true}
+	}
+
+	total, err := r.queries.CountBlogCategories(ctx, sqlc.CountBlogCategoriesParams{
+		AppID:  filter.AppID,
+		Search: searchText,
+	})
 	if err != nil {
-		return nil, fmt.Errorf("repository/list-blog-categories: %w", err)
+		return nil, 0, fmt.Errorf("repository/count-blog-categories: %w", err)
+	}
+
+	rows, err := r.queries.ListBlogCategories(ctx, sqlc.ListBlogCategoriesParams{
+		AppID:  filter.AppID,
+		Search: searchText,
+		Limit:  filter.Limit,
+		Offset: filter.Offset,
+	})
+	if err != nil {
+		return nil, 0, fmt.Errorf("repository/list-blog-categories: %w", err)
 	}
 
 	categories := make([]*entity.ContentBlogCategory, len(rows))
@@ -199,7 +217,34 @@ func (r *contentRepository) ListBlogCategories(ctx context.Context, appID string
 			UpdatedAt:   c.UpdatedAt,
 		}
 	}
-	return categories, nil
+	return categories, total, nil
+}
+
+func (r *contentRepository) UpdateBlogCategory(ctx context.Context, c *entity.ContentBlogCategory) (*entity.ContentBlogCategory, error) {
+	row, err := r.queries.UpdateBlogCategory(ctx, sqlc.UpdateBlogCategoryParams{
+		ID:          c.ID,
+		AppID:       c.AppID,
+		Name:        c.Name,
+		Slug:        c.Slug,
+		Description: c.Description,
+		IsActive:    c.IsActive,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domainErrors.ErrBlogCategoryNotFound
+		}
+		return nil, fmt.Errorf("repository/update-blog-category: %w", err)
+	}
+	return &entity.ContentBlogCategory{
+		ID:          row.ID,
+		AppID:       row.AppID,
+		Name:        row.Name,
+		Slug:        row.Slug,
+		Description: row.Description,
+		IsActive:    row.IsActive,
+		CreatedAt:   row.CreatedAt,
+		UpdatedAt:   row.UpdatedAt,
+	}, nil
 }
 
 func (r *contentRepository) GetBlogCategoryByID(ctx context.Context, appID string, id uuid.UUID) (*entity.ContentBlogCategory, error) {
@@ -663,6 +708,38 @@ func (r *contentRepository) CreateGallery(ctx context.Context, g *entity.Content
 	}, nil
 }
 
+func (r *contentRepository) UpdateGallery(ctx context.Context, g *entity.ContentGallery) (*entity.ContentGallery, error) {
+	row, err := r.queries.UpdateGallery(ctx, sqlc.UpdateGalleryParams{
+		ID:          g.ID,
+		AppID:       g.AppID,
+		Title:       g.Title,
+		Slug:        g.Slug,
+		Description: g.Description,
+		Category:    g.Category,
+		CoverUrl:    g.CoverURL,
+		IsActive:    g.IsActive,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domainErrors.ErrGalleryNotFound
+		}
+		return nil, fmt.Errorf("repository/update-gallery: %w", err)
+	}
+
+	return &entity.ContentGallery{
+		ID:          row.ID,
+		AppID:       row.AppID,
+		Title:       row.Title,
+		Slug:        row.Slug,
+		Description: row.Description,
+		Category:    row.Category,
+		CoverURL:    row.CoverUrl,
+		IsActive:    row.IsActive,
+		CreatedAt:   row.CreatedAt,
+		UpdatedAt:   row.UpdatedAt,
+	}, nil
+}
+
 func (r *contentRepository) DeleteGallery(ctx context.Context, appID string, id uuid.UUID) error {
 	return r.queries.DeleteGallery(ctx, sqlc.DeleteGalleryParams{
 		ID:    id,
@@ -744,30 +821,47 @@ func (r *contentRepository) DeleteGalleryItem(ctx context.Context, appID string,
 // 4. Custom Blocks
 // -----------------------------------------------------------------------------
 
-func (r *contentRepository) ListCustomBlocks(ctx context.Context, appID, contentType string, isActive *bool) ([]*entity.ContentCustomBlock, error) {
+func (r *contentRepository) ListCustomBlocks(ctx context.Context, filter entity.ListCustomBlocksFilter) ([]*entity.ContentCustomBlock, int64, error) {
 	var activeFilter pgtype.Bool
-	if isActive != nil {
-		activeFilter = pgtype.Bool{Bool: *isActive, Valid: true}
+	if filter.IsActive != nil {
+		activeFilter = pgtype.Bool{Bool: *filter.IsActive, Valid: true}
 	}
 	var cType pgtype.Text
-	if contentType != "" {
-		cType = pgtype.Text{String: contentType, Valid: true}
+	if filter.ContentType != "" {
+		cType = pgtype.Text{String: filter.ContentType, Valid: true}
+	}
+	var searchText pgtype.Text
+	if filter.Search != "" {
+		searchText = pgtype.Text{String: filter.Search, Valid: true}
+	}
+
+	total, err := r.queries.CountCustomBlocks(ctx, sqlc.CountCustomBlocksParams{
+		AppID:       filter.AppID,
+		ContentType: cType,
+		IsActive:    activeFilter,
+		Search:      searchText,
+	})
+	if err != nil {
+		return nil, 0, fmt.Errorf("repository/count-custom-blocks: %w", err)
 	}
 
 	rows, err := r.queries.ListCustomBlocks(ctx, sqlc.ListCustomBlocksParams{
-		AppID:       appID,
+		AppID:       filter.AppID,
 		ContentType: cType,
 		IsActive:    activeFilter,
+		Search:      searchText,
+		Limit:       filter.Limit,
+		Offset:      filter.Offset,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("repository/list-custom-blocks: %w", err)
+		return nil, 0, fmt.Errorf("repository/list-custom-blocks: %w", err)
 	}
 
 	blocks := make([]*entity.ContentCustomBlock, len(rows))
 	for i, b := range rows {
 		blocks[i] = toDomainCustomBlock(&b)
 	}
-	return blocks, nil
+	return blocks, total, nil
 }
 
 func (r *contentRepository) GetCustomBlockBySection(ctx context.Context, appID, sectionKey string) (*entity.ContentCustomBlock, error) {
@@ -819,23 +913,40 @@ func (r *contentRepository) DeleteCustomBlock(ctx context.Context, appID string,
 // 5. FAQs
 // -----------------------------------------------------------------------------
 
-func (r *contentRepository) ListFAQs(ctx context.Context, appID, category string, isActive *bool) ([]*entity.ContentFAQ, error) {
+func (r *contentRepository) ListFAQs(ctx context.Context, filter entity.ListFAQsFilter) ([]*entity.ContentFAQ, int64, error) {
 	var activeFilter pgtype.Bool
-	if isActive != nil {
-		activeFilter = pgtype.Bool{Bool: *isActive, Valid: true}
+	if filter.IsActive != nil {
+		activeFilter = pgtype.Bool{Bool: *filter.IsActive, Valid: true}
 	}
 	var cat pgtype.Text
-	if category != "" {
-		cat = pgtype.Text{String: category, Valid: true}
+	if filter.Category != "" {
+		cat = pgtype.Text{String: filter.Category, Valid: true}
+	}
+	var searchText pgtype.Text
+	if filter.Search != "" {
+		searchText = pgtype.Text{String: filter.Search, Valid: true}
+	}
+
+	total, err := r.queries.CountFAQs(ctx, sqlc.CountFAQsParams{
+		AppID:    filter.AppID,
+		Category: cat,
+		IsActive: activeFilter,
+		Search:   searchText,
+	})
+	if err != nil {
+		return nil, 0, fmt.Errorf("repository/count-faqs: %w", err)
 	}
 
 	rows, err := r.queries.ListFAQs(ctx, sqlc.ListFAQsParams{
-		AppID:    appID,
+		AppID:    filter.AppID,
 		Category: cat,
 		IsActive: activeFilter,
+		Search:   searchText,
+		Limit:    filter.Limit,
+		Offset:   filter.Offset,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("repository/list-faqs: %w", err)
+		return nil, 0, fmt.Errorf("repository/list-faqs: %w", err)
 	}
 
 	faqs := make([]*entity.ContentFAQ, len(rows))
@@ -852,7 +963,7 @@ func (r *contentRepository) ListFAQs(ctx context.Context, appID, category string
 			UpdatedAt:     f.UpdatedAt,
 		}
 	}
-	return faqs, nil
+	return faqs, total, nil
 }
 
 func (r *contentRepository) CreateFAQ(ctx context.Context, f *entity.ContentFAQ) (*entity.ContentFAQ, error) {
