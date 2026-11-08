@@ -27,7 +27,7 @@ type Querier interface {
 	DeleteCustomBlock(ctx context.Context, arg DeleteCustomBlockParams) error
 	DeleteFAQ(ctx context.Context, arg DeleteFAQParams) error
 	DeleteGallery(ctx context.Context, arg DeleteGalleryParams) error
-	DeleteGalleryItem(ctx context.Context, id uuid.UUID) error
+	DeleteGalleryItem(ctx context.Context, arg DeleteGalleryItemParams) error
 	DeleteTestimonial(ctx context.Context, arg DeleteTestimonialParams) error
 	GetBannerByID(ctx context.Context, arg GetBannerByIDParams) (ContentBanner, error)
 	GetBlogByID(ctx context.Context, arg GetBlogByIDParams) (GetBlogByIDRow, error)

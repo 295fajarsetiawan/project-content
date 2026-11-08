@@ -250,8 +250,10 @@ func (m *mockContentRepo) AddGalleryItem(ctx context.Context, item *entity.Conte
 	return item, nil
 }
 
-func (m *mockContentRepo) DeleteGalleryItem(ctx context.Context, id uuid.UUID) error {
-	delete(m.galleryItems, id)
+func (m *mockContentRepo) DeleteGalleryItem(ctx context.Context, appID string, id uuid.UUID) error {
+	if item, ok := m.galleryItems[id]; ok && item.AppID == appID {
+		delete(m.galleryItems, id)
+	}
 	return nil
 }
 
@@ -503,5 +505,28 @@ func TestContentUsecase_CustomBlocksAndFAQs(t *testing.T) {
 	}
 	if len(faqs) != 1 || faqs[0].ID != faq.ID {
 		t.Errorf("expected 1 faq matching, got %d", len(faqs))
+	}
+}
+
+func TestContentUsecase_DeleteGalleryItemIsScopedToApp(t *testing.T) {
+	repo := newMockRepo()
+	uc := content.NewContentUsecase(repo, storage.NewLocalStorageService(t.TempDir(), "http://localhost:50055/storage/uploads"))
+	ctx := context.Background()
+
+	item := &entity.ContentGalleryItem{ID: uuid.New(), AppID: "umroh"}
+	repo.galleryItems[item.ID] = item
+
+	if err := uc.DeleteGalleryItem(ctx, "other", item.ID); err != nil {
+		t.Fatalf("cross-app delete returned error: %v", err)
+	}
+	if _, ok := repo.galleryItems[item.ID]; !ok {
+		t.Fatal("item from another app was deleted")
+	}
+
+	if err := uc.DeleteGalleryItem(ctx, "umroh", item.ID); err != nil {
+		t.Fatalf("same-app delete failed: %v", err)
+	}
+	if _, ok := repo.galleryItems[item.ID]; ok {
+		t.Fatal("item was not deleted by its own app")
 	}
 }

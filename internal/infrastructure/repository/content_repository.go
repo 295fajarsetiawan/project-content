@@ -736,8 +736,8 @@ func (r *contentRepository) AddGalleryItem(ctx context.Context, item *entity.Con
 	}, nil
 }
 
-func (r *contentRepository) DeleteGalleryItem(ctx context.Context, id uuid.UUID) error {
-	return r.queries.DeleteGalleryItem(ctx, id)
+func (r *contentRepository) DeleteGalleryItem(ctx context.Context, appID string, id uuid.UUID) error {
+	return r.queries.DeleteGalleryItem(ctx, sqlc.DeleteGalleryItemParams{ID: id, AppID: appID})
 }
 
 // -----------------------------------------------------------------------------

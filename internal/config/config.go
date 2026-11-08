@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"log"
 	"os"
 	"strconv"
@@ -10,18 +11,18 @@ import (
 )
 
 type Config struct {
-	AppName                 string
-	AppEnv                  string
-	GRPCPort                string
-	HTTPPort                string
-	JWTSecret               string
-	StorageBaseURL          string
-	StorageUploadDir        string
-	DatabaseURL             string
-	DBMaxOpenConns          int
-	DBMaxIdleConns          int
-	DBConnMaxLifetime       time.Duration
-	MigrationsPath          string
+	AppName           string
+	AppEnv            string
+	GRPCPort          string
+	HTTPPort          string
+	JWTSecret         string
+	StorageBaseURL    string
+	StorageUploadDir  string
+	DatabaseURL       string
+	DBMaxOpenConns    int
+	DBMaxIdleConns    int
+	DBConnMaxLifetime time.Duration
+	MigrationsPath    string
 }
 
 func LoadConfig() (*Config, error) {
@@ -32,7 +33,7 @@ func LoadConfig() (*Config, error) {
 		AppEnv:            getEnv("APP_ENV", "development"),
 		GRPCPort:          getEnv("GRPC_PORT", "50054"),
 		HTTPPort:          getEnv("HTTP_PORT", "50055"),
-		JWTSecret:         getEnv("JWT_SECRET", "0422bd6f63835d7e0d398b2892e9be1ed71cbb06481ffcdd7d21481e2ab84db6"),
+		JWTSecret:         getEnv("JWT_SECRET", ""),
 		StorageBaseURL:    getEnv("STORAGE_BASE_URL", "http://localhost:50055/storage/uploads"),
 		StorageUploadDir:  getEnv("STORAGE_UPLOAD_DIR", "storage/uploads"),
 		DatabaseURL:       getEnv("DATABASE_URL", ""),
@@ -40,6 +41,13 @@ func LoadConfig() (*Config, error) {
 		DBMaxIdleConns:    getEnvAsInt("DB_MAX_IDLE_CONNS", 10),
 		DBConnMaxLifetime: time.Duration(getEnvAsInt("DB_CONN_MAX_LIFETIME_MINUTES", 30)) * time.Minute,
 		MigrationsPath:    getEnv("MIGRATIONS_PATH", "db/migrations"),
+	}
+
+	if cfg.JWTSecret == "" {
+		if cfg.AppEnv != "development" {
+			return nil, errors.New("JWT_SECRET must be set when APP_ENV is not development")
+		}
+		log.Println("[WARN] JWT_SECRET is not set; tokens cannot be validated in development")
 	}
 
 	if cfg.DatabaseURL == "" {
