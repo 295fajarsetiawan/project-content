@@ -69,13 +69,15 @@ const createBlog = `-- name: CreateBlog :one
 INSERT INTO content_blogs (
     app_id, category_id, author_id, author_name,
     title, slug, excerpt, body, thumbnail_url, tags,
-    meta_title, meta_description, status, is_featured, published_at
+    meta_title, meta_description, status, is_featured, published_at,
+    thumbnail_key
 ) VALUES (
     $1, $2, $3, $4,
     $5, $6, $7, $8, $9, $10,
-    $11, $12, $13, $14, $15
+    $11, $12, $13, $14, $15,
+    $16
 )
-RETURNING id, app_id, category_id, author_id, author_name, title, slug, excerpt, body, thumbnail_url, tags, meta_title, meta_description, status, is_featured, view_count, published_at, created_at, updated_at
+RETURNING id, app_id, category_id, author_id, author_name, title, slug, excerpt, body, thumbnail_url, tags, meta_title, meta_description, status, is_featured, view_count, published_at, created_at, updated_at, thumbnail_key
 `
 
 type CreateBlogParams struct {
@@ -94,6 +96,7 @@ type CreateBlogParams struct {
 	Status          string             `db:"status" json:"status"`
 	IsFeatured      bool               `db:"is_featured" json:"is_featured"`
 	PublishedAt     pgtype.Timestamptz `db:"published_at" json:"published_at"`
+	ThumbnailKey    string             `db:"thumbnail_key" json:"thumbnail_key"`
 }
 
 func (q *Queries) CreateBlog(ctx context.Context, arg CreateBlogParams) (ContentBlog, error) {
@@ -113,6 +116,7 @@ func (q *Queries) CreateBlog(ctx context.Context, arg CreateBlogParams) (Content
 		arg.Status,
 		arg.IsFeatured,
 		arg.PublishedAt,
+		arg.ThumbnailKey,
 	)
 	var i ContentBlog
 	err := row.Scan(
@@ -135,6 +139,7 @@ func (q *Queries) CreateBlog(ctx context.Context, arg CreateBlogParams) (Content
 		&i.PublishedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ThumbnailKey,
 	)
 	return i, err
 }
@@ -199,6 +204,7 @@ SELECT
     b.title, b.slug, b.excerpt, b.body, b.thumbnail_url, b.tags,
     b.meta_title, b.meta_description, b.status, b.is_featured,
     b.view_count, b.published_at, b.created_at, b.updated_at,
+    b.thumbnail_key,
     c.name AS category_name, c.slug AS category_slug
 FROM content_blogs b
 JOIN content_blog_categories c ON b.category_id = c.id
@@ -230,6 +236,7 @@ type GetBlogByIDRow struct {
 	PublishedAt     pgtype.Timestamptz `db:"published_at" json:"published_at"`
 	CreatedAt       time.Time          `db:"created_at" json:"created_at"`
 	UpdatedAt       time.Time          `db:"updated_at" json:"updated_at"`
+	ThumbnailKey    string             `db:"thumbnail_key" json:"thumbnail_key"`
 	CategoryName    string             `db:"category_name" json:"category_name"`
 	CategorySlug    string             `db:"category_slug" json:"category_slug"`
 }
@@ -257,6 +264,7 @@ func (q *Queries) GetBlogByID(ctx context.Context, arg GetBlogByIDParams) (GetBl
 		&i.PublishedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ThumbnailKey,
 		&i.CategoryName,
 		&i.CategorySlug,
 	)
@@ -269,6 +277,7 @@ SELECT
     b.title, b.slug, b.excerpt, b.body, b.thumbnail_url, b.tags,
     b.meta_title, b.meta_description, b.status, b.is_featured,
     b.view_count, b.published_at, b.created_at, b.updated_at,
+    b.thumbnail_key,
     c.name AS category_name, c.slug AS category_slug
 FROM content_blogs b
 JOIN content_blog_categories c ON b.category_id = c.id
@@ -300,6 +309,7 @@ type GetBlogBySlugRow struct {
 	PublishedAt     pgtype.Timestamptz `db:"published_at" json:"published_at"`
 	CreatedAt       time.Time          `db:"created_at" json:"created_at"`
 	UpdatedAt       time.Time          `db:"updated_at" json:"updated_at"`
+	ThumbnailKey    string             `db:"thumbnail_key" json:"thumbnail_key"`
 	CategoryName    string             `db:"category_name" json:"category_name"`
 	CategorySlug    string             `db:"category_slug" json:"category_slug"`
 }
@@ -327,6 +337,7 @@ func (q *Queries) GetBlogBySlug(ctx context.Context, arg GetBlogBySlugParams) (G
 		&i.PublishedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ThumbnailKey,
 		&i.CategoryName,
 		&i.CategorySlug,
 	)
@@ -460,6 +471,7 @@ SELECT
     b.title, b.slug, b.excerpt, b.body, b.thumbnail_url, b.tags,
     b.meta_title, b.meta_description, b.status, b.is_featured,
     b.view_count, b.published_at, b.created_at, b.updated_at,
+    b.thumbnail_key,
     c.name AS category_name, c.slug AS category_slug
 FROM content_blogs b
 JOIN content_blog_categories c ON b.category_id = c.id
@@ -502,6 +514,7 @@ type ListBlogsRow struct {
 	PublishedAt     pgtype.Timestamptz `db:"published_at" json:"published_at"`
 	CreatedAt       time.Time          `db:"created_at" json:"created_at"`
 	UpdatedAt       time.Time          `db:"updated_at" json:"updated_at"`
+	ThumbnailKey    string             `db:"thumbnail_key" json:"thumbnail_key"`
 	CategoryName    string             `db:"category_name" json:"category_name"`
 	CategorySlug    string             `db:"category_slug" json:"category_slug"`
 }
@@ -544,6 +557,7 @@ func (q *Queries) ListBlogs(ctx context.Context, arg ListBlogsParams) ([]ListBlo
 			&i.PublishedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.ThumbnailKey,
 			&i.CategoryName,
 			&i.CategorySlug,
 		); err != nil {
@@ -570,9 +584,11 @@ SET
     meta_title = $10,
     meta_description = $11,
     status = $12,
-    is_featured = $13
+    is_featured = $13,
+    thumbnail_key = $14,
+    updated_at = CURRENT_TIMESTAMP
 WHERE id = $1 AND app_id = $2
-RETURNING id, app_id, category_id, author_id, author_name, title, slug, excerpt, body, thumbnail_url, tags, meta_title, meta_description, status, is_featured, view_count, published_at, created_at, updated_at
+RETURNING id, app_id, category_id, author_id, author_name, title, slug, excerpt, body, thumbnail_url, tags, meta_title, meta_description, status, is_featured, view_count, published_at, created_at, updated_at, thumbnail_key
 `
 
 type UpdateBlogParams struct {
@@ -589,6 +605,7 @@ type UpdateBlogParams struct {
 	MetaDescription string    `db:"meta_description" json:"meta_description"`
 	Status          string    `db:"status" json:"status"`
 	IsFeatured      bool      `db:"is_featured" json:"is_featured"`
+	ThumbnailKey    string    `db:"thumbnail_key" json:"thumbnail_key"`
 }
 
 func (q *Queries) UpdateBlog(ctx context.Context, arg UpdateBlogParams) (ContentBlog, error) {
@@ -606,6 +623,7 @@ func (q *Queries) UpdateBlog(ctx context.Context, arg UpdateBlogParams) (Content
 		arg.MetaDescription,
 		arg.Status,
 		arg.IsFeatured,
+		arg.ThumbnailKey,
 	)
 	var i ContentBlog
 	err := row.Scan(
@@ -628,6 +646,7 @@ func (q *Queries) UpdateBlog(ctx context.Context, arg UpdateBlogParams) (Content
 		&i.PublishedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ThumbnailKey,
 	)
 	return i, err
 }

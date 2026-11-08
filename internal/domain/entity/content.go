@@ -52,6 +52,8 @@ type ContentBanner struct {
 	Description    string                 `json:"description"`
 	ImageURL       string                 `json:"image_url"`
 	MobileImageURL string                 `json:"mobile_image_url"`
+	ImageKey       string                 `json:"image_key"`
+	MobileImageKey string                 `json:"mobile_image_key"`
 	TargetURL      string                 `json:"target_url"`
 	ButtonText     string                 `json:"button_text"`
 	Position       string                 `json:"position"` // HERO, PROMO, POPUP, SIDEBAR
@@ -133,6 +135,7 @@ type ContentBlog struct {
 	Excerpt         string     `json:"excerpt"`
 	Body            string     `json:"body"`
 	ThumbnailURL    string     `json:"thumbnail_url"`
+	ThumbnailKey    string     `json:"thumbnail_key"`
 	Tags            []string   `json:"tags"`
 	MetaTitle       string     `json:"meta_title"`
 	MetaDescription string     `json:"meta_description"`
@@ -166,6 +169,7 @@ type ContentGallery struct {
 	Description string               `json:"description"`
 	Category    string               `json:"category"` // UMRAH, HAJJ, TOUR, EVENT, GENERAL
 	CoverURL    string               `json:"cover_url"`
+	CoverKey    string               `json:"cover_key"`
 	IsActive    bool                 `json:"is_active"`
 	Items       []ContentGalleryItem `json:"items,omitempty"`
 	CreatedAt   time.Time            `json:"created_at"`
@@ -181,6 +185,8 @@ type ContentGalleryItem struct {
 	MediaType     string    `json:"media_type"` // IMAGE, VIDEO
 	MediaURL      string    `json:"media_url"`
 	ThumbnailURL  string    `json:"thumbnail_url"`
+	MediaKey      string    `json:"media_key"`
+	ThumbnailKey  string    `json:"thumbnail_key"`
 	SequenceOrder int32     `json:"sequence_order"`
 	IsActive      bool      `json:"is_active"`
 	CreatedAt     time.Time `json:"created_at"`
@@ -208,6 +214,7 @@ type ContentCustomBlock struct {
 	Subtitle      string                 `json:"subtitle"`
 	Body          string                 `json:"body"`
 	ImageURL      string                 `json:"image_url"`
+	ImageKey      string                 `json:"image_key"`
 	Metadata      map[string]interface{} `json:"metadata"`
 	SequenceOrder int32                  `json:"sequence_order"`
 	IsActive      bool                   `json:"is_active"`
@@ -233,6 +240,7 @@ type ContentTestimonial struct {
 	CustomerName  string    `json:"customer_name"`
 	CustomerTitle string    `json:"customer_title"`
 	AvatarURL     string    `json:"avatar_url"`
+	AvatarKey     string    `json:"avatar_key"`
 	Rating        int32     `json:"rating"`
 	Comment       string    `json:"comment"`
 	PackageName   string    `json:"package_name"`

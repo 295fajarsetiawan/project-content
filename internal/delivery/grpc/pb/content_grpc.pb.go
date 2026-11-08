@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.0
 // - protoc             v6.33.2
-// source: content/v1/content.proto
+// source: proto/content/v1/content.proto
 
 package pb
 
@@ -1363,5 +1363,5 @@ var ContentService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "content/v1/content.proto",
+	Metadata: "proto/content/v1/content.proto",
 }

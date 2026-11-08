@@ -2,7 +2,8 @@
 SELECT 
     id, app_id, title, subtitle, description, image_url, mobile_image_url,
     target_url, button_text, position, sequence_order, start_date, end_date,
-    is_active, additional_data, created_by, created_at, updated_at
+    is_active, additional_data, created_by, created_at, updated_at,
+    image_key, mobile_image_key
 FROM content_banners
 WHERE app_id = sqlc.arg('app_id')
   AND (sqlc.narg('position')::text IS NULL OR sqlc.narg('position')::text = '' OR position = sqlc.narg('position'))
@@ -21,7 +22,8 @@ WHERE app_id = sqlc.arg('app_id')
 SELECT 
     id, app_id, title, subtitle, description, image_url, mobile_image_url,
     target_url, button_text, position, sequence_order, start_date, end_date,
-    is_active, additional_data, created_by, created_at, updated_at
+    is_active, additional_data, created_by, created_at, updated_at,
+    image_key, mobile_image_key
 FROM content_banners
 WHERE id = $1 AND app_id = $2;
 
@@ -29,11 +31,11 @@ WHERE id = $1 AND app_id = $2;
 INSERT INTO content_banners (
     app_id, title, subtitle, description, image_url, mobile_image_url,
     target_url, button_text, position, sequence_order, start_date, end_date,
-    is_active, additional_data, created_by
+    is_active, additional_data, created_by, image_key, mobile_image_key
 ) VALUES (
     $1, $2, $3, $4, $5, $6,
     $7, $8, $9, $10, $11, $12,
-    $13, $14, $15
+    $13, $14, $15, $16, $17
 )
 RETURNING *;
 
@@ -52,7 +54,10 @@ SET
     start_date = $12,
     end_date = $13,
     is_active = $14,
-    additional_data = $15
+    additional_data = $15,
+    image_key = $16,
+    mobile_image_key = $17,
+    updated_at = CURRENT_TIMESTAMP
 WHERE id = $1 AND app_id = $2
 RETURNING *;
 

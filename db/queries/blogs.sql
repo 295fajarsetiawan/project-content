@@ -53,6 +53,7 @@ SELECT
     b.title, b.slug, b.excerpt, b.body, b.thumbnail_url, b.tags,
     b.meta_title, b.meta_description, b.status, b.is_featured,
     b.view_count, b.published_at, b.created_at, b.updated_at,
+    b.thumbnail_key,
     c.name AS category_name, c.slug AS category_slug
 FROM content_blogs b
 JOIN content_blog_categories c ON b.category_id = c.id
@@ -79,6 +80,7 @@ SELECT
     b.title, b.slug, b.excerpt, b.body, b.thumbnail_url, b.tags,
     b.meta_title, b.meta_description, b.status, b.is_featured,
     b.view_count, b.published_at, b.created_at, b.updated_at,
+    b.thumbnail_key,
     c.name AS category_name, c.slug AS category_slug
 FROM content_blogs b
 JOIN content_blog_categories c ON b.category_id = c.id
@@ -90,6 +92,7 @@ SELECT
     b.title, b.slug, b.excerpt, b.body, b.thumbnail_url, b.tags,
     b.meta_title, b.meta_description, b.status, b.is_featured,
     b.view_count, b.published_at, b.created_at, b.updated_at,
+    b.thumbnail_key,
     c.name AS category_name, c.slug AS category_slug
 FROM content_blogs b
 JOIN content_blog_categories c ON b.category_id = c.id
@@ -104,11 +107,13 @@ WHERE id = $1;
 INSERT INTO content_blogs (
     app_id, category_id, author_id, author_name,
     title, slug, excerpt, body, thumbnail_url, tags,
-    meta_title, meta_description, status, is_featured, published_at
+    meta_title, meta_description, status, is_featured, published_at,
+    thumbnail_key
 ) VALUES (
     $1, $2, $3, $4,
     $5, $6, $7, $8, $9, $10,
-    $11, $12, $13, $14, $15
+    $11, $12, $13, $14, $15,
+    $16
 )
 RETURNING *;
 
@@ -125,7 +130,9 @@ SET
     meta_title = $10,
     meta_description = $11,
     status = $12,
-    is_featured = $13
+    is_featured = $13,
+    thumbnail_key = $14,
+    updated_at = CURRENT_TIMESTAMP
 WHERE id = $1 AND app_id = $2
 RETURNING *;
 

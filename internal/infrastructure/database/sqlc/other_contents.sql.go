@@ -133,11 +133,11 @@ func (q *Queries) CreateFAQ(ctx context.Context, arg CreateFAQParams) (ContentFa
 
 const createTestimonial = `-- name: CreateTestimonial :one
 INSERT INTO content_testimonials (
-    app_id, customer_name, customer_title, avatar_url, rating, comment, package_name, is_featured, is_active
+    app_id, customer_name, customer_title, avatar_url, rating, comment, package_name, is_featured, is_active, avatar_key
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 )
-RETURNING id, app_id, customer_name, customer_title, avatar_url, rating, comment, package_name, is_featured, is_active, created_at, updated_at
+RETURNING id, app_id, customer_name, customer_title, avatar_url, rating, comment, package_name, is_featured, is_active, created_at, updated_at, avatar_key
 `
 
 type CreateTestimonialParams struct {
@@ -150,6 +150,7 @@ type CreateTestimonialParams struct {
 	PackageName   string `db:"package_name" json:"package_name"`
 	IsFeatured    bool   `db:"is_featured" json:"is_featured"`
 	IsActive      bool   `db:"is_active" json:"is_active"`
+	AvatarKey     string `db:"avatar_key" json:"avatar_key"`
 }
 
 func (q *Queries) CreateTestimonial(ctx context.Context, arg CreateTestimonialParams) (ContentTestimonial, error) {
@@ -163,6 +164,7 @@ func (q *Queries) CreateTestimonial(ctx context.Context, arg CreateTestimonialPa
 		arg.PackageName,
 		arg.IsFeatured,
 		arg.IsActive,
+		arg.AvatarKey,
 	)
 	var i ContentTestimonial
 	err := row.Scan(
@@ -178,6 +180,7 @@ func (q *Queries) CreateTestimonial(ctx context.Context, arg CreateTestimonialPa
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AvatarKey,
 	)
 	return i, err
 }
@@ -228,7 +231,7 @@ func (q *Queries) DeleteTestimonial(ctx context.Context, arg DeleteTestimonialPa
 }
 
 const getCustomBlockBySection = `-- name: GetCustomBlockBySection :one
-SELECT id, app_id, section_key, content_type, title, subtitle, body, image_url, metadata, sequence_order, is_active, created_at, updated_at
+SELECT id, app_id, section_key, content_type, title, subtitle, body, image_url, metadata, sequence_order, is_active, created_at, updated_at, image_key
 FROM content_custom_blocks
 WHERE app_id = $1 AND section_key = $2
 `
@@ -255,13 +258,14 @@ func (q *Queries) GetCustomBlockBySection(ctx context.Context, arg GetCustomBloc
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ImageKey,
 	)
 	return i, err
 }
 
 const listCustomBlocks = `-- name: ListCustomBlocks :many
 
-SELECT id, app_id, section_key, content_type, title, subtitle, body, image_url, metadata, sequence_order, is_active, created_at, updated_at
+SELECT id, app_id, section_key, content_type, title, subtitle, body, image_url, metadata, sequence_order, is_active, created_at, updated_at, image_key
 FROM content_custom_blocks
 WHERE app_id = $1
   AND ($2::text IS NULL OR $2::text = '' OR content_type = $2)
@@ -311,6 +315,7 @@ func (q *Queries) ListCustomBlocks(ctx context.Context, arg ListCustomBlocksPara
 			&i.IsActive,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.ImageKey,
 		); err != nil {
 			return nil, err
 		}
@@ -383,7 +388,7 @@ func (q *Queries) ListFAQs(ctx context.Context, arg ListFAQsParams) ([]ContentFa
 
 const listTestimonials = `-- name: ListTestimonials :many
 
-SELECT id, app_id, customer_name, customer_title, avatar_url, rating, comment, package_name, is_featured, is_active, created_at, updated_at
+SELECT id, app_id, customer_name, customer_title, avatar_url, rating, comment, package_name, is_featured, is_active, created_at, updated_at, avatar_key
 FROM content_testimonials
 WHERE app_id = $1
   AND ($2::boolean IS NULL OR is_active = $2)
@@ -429,6 +434,7 @@ func (q *Queries) ListTestimonials(ctx context.Context, arg ListTestimonialsPara
 			&i.IsActive,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.AvatarKey,
 		); err != nil {
 			return nil, err
 		}
@@ -497,9 +503,10 @@ SET
     comment = $7,
     package_name = $8,
     is_featured = $9,
-    is_active = $10
+    is_active = $10,
+    avatar_key = $11
 WHERE id = $1 AND app_id = $2
-RETURNING id, app_id, customer_name, customer_title, avatar_url, rating, comment, package_name, is_featured, is_active, created_at, updated_at
+RETURNING id, app_id, customer_name, customer_title, avatar_url, rating, comment, package_name, is_featured, is_active, created_at, updated_at, avatar_key
 `
 
 type UpdateTestimonialParams struct {
@@ -513,6 +520,7 @@ type UpdateTestimonialParams struct {
 	PackageName   string    `db:"package_name" json:"package_name"`
 	IsFeatured    bool      `db:"is_featured" json:"is_featured"`
 	IsActive      bool      `db:"is_active" json:"is_active"`
+	AvatarKey     string    `db:"avatar_key" json:"avatar_key"`
 }
 
 func (q *Queries) UpdateTestimonial(ctx context.Context, arg UpdateTestimonialParams) (ContentTestimonial, error) {
@@ -527,6 +535,7 @@ func (q *Queries) UpdateTestimonial(ctx context.Context, arg UpdateTestimonialPa
 		arg.PackageName,
 		arg.IsFeatured,
 		arg.IsActive,
+		arg.AvatarKey,
 	)
 	var i ContentTestimonial
 	err := row.Scan(
@@ -542,15 +551,16 @@ func (q *Queries) UpdateTestimonial(ctx context.Context, arg UpdateTestimonialPa
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AvatarKey,
 	)
 	return i, err
 }
 
 const upsertCustomBlock = `-- name: UpsertCustomBlock :one
 INSERT INTO content_custom_blocks (
-    app_id, section_key, content_type, title, subtitle, body, image_url, metadata, sequence_order, is_active
+    app_id, section_key, content_type, title, subtitle, body, image_url, metadata, sequence_order, is_active, image_key
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
 )
 ON CONFLICT (app_id, section_key) DO UPDATE SET
     content_type = EXCLUDED.content_type,
@@ -561,8 +571,9 @@ ON CONFLICT (app_id, section_key) DO UPDATE SET
     metadata = EXCLUDED.metadata,
     sequence_order = EXCLUDED.sequence_order,
     is_active = EXCLUDED.is_active,
+    image_key = EXCLUDED.image_key,
     updated_at = CURRENT_TIMESTAMP
-RETURNING id, app_id, section_key, content_type, title, subtitle, body, image_url, metadata, sequence_order, is_active, created_at, updated_at
+RETURNING id, app_id, section_key, content_type, title, subtitle, body, image_url, metadata, sequence_order, is_active, created_at, updated_at, image_key
 `
 
 type UpsertCustomBlockParams struct {
@@ -576,6 +587,7 @@ type UpsertCustomBlockParams struct {
 	Metadata      []byte `db:"metadata" json:"metadata"`
 	SequenceOrder int32  `db:"sequence_order" json:"sequence_order"`
 	IsActive      bool   `db:"is_active" json:"is_active"`
+	ImageKey      string `db:"image_key" json:"image_key"`
 }
 
 func (q *Queries) UpsertCustomBlock(ctx context.Context, arg UpsertCustomBlockParams) (ContentCustomBlock, error) {
@@ -590,6 +602,7 @@ func (q *Queries) UpsertCustomBlock(ctx context.Context, arg UpsertCustomBlockPa
 		arg.Metadata,
 		arg.SequenceOrder,
 		arg.IsActive,
+		arg.ImageKey,
 	)
 	var i ContentCustomBlock
 	err := row.Scan(
@@ -606,6 +619,7 @@ func (q *Queries) UpsertCustomBlock(ctx context.Context, arg UpsertCustomBlockPa
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ImageKey,
 	)
 	return i, err
 }

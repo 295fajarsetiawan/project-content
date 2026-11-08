@@ -37,13 +37,13 @@ const createBanner = `-- name: CreateBanner :one
 INSERT INTO content_banners (
     app_id, title, subtitle, description, image_url, mobile_image_url,
     target_url, button_text, position, sequence_order, start_date, end_date,
-    is_active, additional_data, created_by
+    is_active, additional_data, created_by, image_key, mobile_image_key
 ) VALUES (
     $1, $2, $3, $4, $5, $6,
     $7, $8, $9, $10, $11, $12,
-    $13, $14, $15
+    $13, $14, $15, $16, $17
 )
-RETURNING id, app_id, title, subtitle, description, image_url, mobile_image_url, target_url, button_text, position, sequence_order, start_date, end_date, is_active, additional_data, created_by, created_at, updated_at
+RETURNING id, app_id, title, subtitle, description, image_url, mobile_image_url, target_url, button_text, position, sequence_order, start_date, end_date, is_active, additional_data, created_by, created_at, updated_at, image_key, mobile_image_key
 `
 
 type CreateBannerParams struct {
@@ -62,6 +62,8 @@ type CreateBannerParams struct {
 	IsActive       bool               `db:"is_active" json:"is_active"`
 	AdditionalData []byte             `db:"additional_data" json:"additional_data"`
 	CreatedBy      pgtype.UUID        `db:"created_by" json:"created_by"`
+	ImageKey       string             `db:"image_key" json:"image_key"`
+	MobileImageKey string             `db:"mobile_image_key" json:"mobile_image_key"`
 }
 
 func (q *Queries) CreateBanner(ctx context.Context, arg CreateBannerParams) (ContentBanner, error) {
@@ -81,6 +83,8 @@ func (q *Queries) CreateBanner(ctx context.Context, arg CreateBannerParams) (Con
 		arg.IsActive,
 		arg.AdditionalData,
 		arg.CreatedBy,
+		arg.ImageKey,
+		arg.MobileImageKey,
 	)
 	var i ContentBanner
 	err := row.Scan(
@@ -102,6 +106,8 @@ func (q *Queries) CreateBanner(ctx context.Context, arg CreateBannerParams) (Con
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ImageKey,
+		&i.MobileImageKey,
 	)
 	return i, err
 }
@@ -125,7 +131,8 @@ const getBannerByID = `-- name: GetBannerByID :one
 SELECT 
     id, app_id, title, subtitle, description, image_url, mobile_image_url,
     target_url, button_text, position, sequence_order, start_date, end_date,
-    is_active, additional_data, created_by, created_at, updated_at
+    is_active, additional_data, created_by, created_at, updated_at,
+    image_key, mobile_image_key
 FROM content_banners
 WHERE id = $1 AND app_id = $2
 `
@@ -157,6 +164,8 @@ func (q *Queries) GetBannerByID(ctx context.Context, arg GetBannerByIDParams) (C
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ImageKey,
+		&i.MobileImageKey,
 	)
 	return i, err
 }
@@ -165,7 +174,8 @@ const listBanners = `-- name: ListBanners :many
 SELECT 
     id, app_id, title, subtitle, description, image_url, mobile_image_url,
     target_url, button_text, position, sequence_order, start_date, end_date,
-    is_active, additional_data, created_by, created_at, updated_at
+    is_active, additional_data, created_by, created_at, updated_at,
+    image_key, mobile_image_key
 FROM content_banners
 WHERE app_id = $1
   AND ($2::text IS NULL OR $2::text = '' OR position = $2)
@@ -216,6 +226,8 @@ func (q *Queries) ListBanners(ctx context.Context, arg ListBannersParams) ([]Con
 			&i.CreatedBy,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.ImageKey,
+			&i.MobileImageKey,
 		); err != nil {
 			return nil, err
 		}
@@ -242,9 +254,12 @@ SET
     start_date = $12,
     end_date = $13,
     is_active = $14,
-    additional_data = $15
+    additional_data = $15,
+    image_key = $16,
+    mobile_image_key = $17,
+    updated_at = CURRENT_TIMESTAMP
 WHERE id = $1 AND app_id = $2
-RETURNING id, app_id, title, subtitle, description, image_url, mobile_image_url, target_url, button_text, position, sequence_order, start_date, end_date, is_active, additional_data, created_by, created_at, updated_at
+RETURNING id, app_id, title, subtitle, description, image_url, mobile_image_url, target_url, button_text, position, sequence_order, start_date, end_date, is_active, additional_data, created_by, created_at, updated_at, image_key, mobile_image_key
 `
 
 type UpdateBannerParams struct {
@@ -263,6 +278,8 @@ type UpdateBannerParams struct {
 	EndDate        pgtype.Timestamptz `db:"end_date" json:"end_date"`
 	IsActive       bool               `db:"is_active" json:"is_active"`
 	AdditionalData []byte             `db:"additional_data" json:"additional_data"`
+	ImageKey       string             `db:"image_key" json:"image_key"`
+	MobileImageKey string             `db:"mobile_image_key" json:"mobile_image_key"`
 }
 
 func (q *Queries) UpdateBanner(ctx context.Context, arg UpdateBannerParams) (ContentBanner, error) {
@@ -282,6 +299,8 @@ func (q *Queries) UpdateBanner(ctx context.Context, arg UpdateBannerParams) (Con
 		arg.EndDate,
 		arg.IsActive,
 		arg.AdditionalData,
+		arg.ImageKey,
+		arg.MobileImageKey,
 	)
 	var i ContentBanner
 	err := row.Scan(
@@ -303,6 +322,8 @@ func (q *Queries) UpdateBanner(ctx context.Context, arg UpdateBannerParams) (Con
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ImageKey,
+		&i.MobileImageKey,
 	)
 	return i, err
 }
