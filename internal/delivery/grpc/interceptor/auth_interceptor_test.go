@@ -96,3 +96,19 @@ func TestAuthInterceptor_SuperAdminCanActAcrossApps(t *testing.T) {
 		t.Fatalf("superadmin cross-app code = %v, want OK", status.Code(err))
 	}
 }
+
+func TestAuthInterceptor_AdminCannotSpoofAppViaHeader(t *testing.T) {
+	admin := makeToken(t, "admin", "umroh")
+	ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs(
+		"authorization", admin,
+		"x-app-id", "other",
+	))
+	ic := AuthInterceptor(security.NewJWTValidator(testSecret))
+	info := &grpc.UnaryServerInfo{FullMethod: deleteGalleryItemMethod}
+	_, err := ic(ctx, struct{}{}, info, func(ctx context.Context, req interface{}) (interface{}, error) {
+		return "ok", nil
+	})
+	if status.Code(err) != codes.PermissionDenied {
+		t.Fatalf("header spoof code = %v, want PermissionDenied (err=%v)", status.Code(err), err)
+	}
+}

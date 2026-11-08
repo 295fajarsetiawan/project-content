@@ -120,6 +120,9 @@ func AuthInterceptor(jwtValidator *security.JWTValidator) grpc.UnaryServerInterc
 			if g, ok := req.(appIDGetter); ok && g.GetAppId() != "" && g.GetAppId() != userCtx.AppID {
 				return nil, status.Error(codes.PermissionDenied, "app_id does not match token scope")
 			}
+			if appID != "" && appID != userCtx.AppID {
+				return nil, status.Error(codes.PermissionDenied, "app_id does not match token scope")
+			}
 		}
 
 		return handler(ctx, req)
